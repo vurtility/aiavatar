@@ -383,9 +383,12 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
         bc = (150, 150, 150) if brows == "grey" else hc
         q.poly([(cx - ex - 26, ey - 36), (cx - 6, ey - 40), (cx - 6, ey - 32), (cx - ex - 26, ey - 28)], bc, ow=1)
         q.poly([(cx + ex + 26, ey - 36), (cx + 6, ey - 40), (cx + 6, ey - 32), (cx + ex + 26, ey - 28)], bc, ow=1)
-    if glasses:
-        q.arc(cx - ex, ey, 64, 70, 0, 360, wd=3)
-        q.arc(cx + ex, ey, 64, 70, 0, 360, wd=3)
+    if glasses:  # rims centred on the eyes, arms running back to the sides of the head
+        lw = 56 * es
+        q.line([(cx - ex - lw / 2, ey + 2), (cx - 110, ey + 12)], w=3)
+        q.line([(cx + ex + lw / 2, ey + 2), (cx + 110, ey + 12)], w=3)
+        q.arc(cx - ex, ey, lw + 4, 66 * es, 0, 360, wd=3)
+        q.arc(cx + ex, ey, lw + 4, 66 * es, 0, 360, wd=3)
     if nose == "dot":
         q.ell(cx, hy + 26, 12, 9, tuple(int(v * 0.8) for v in sk), ol=None)
     elif nose == "button":
