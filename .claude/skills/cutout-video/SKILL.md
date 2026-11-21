@@ -143,6 +143,9 @@ blocked in cloud sessions.
 ## 10. YouTube upload
 - The end card holds for 20 seconds so YouTube's end screen fits: the **previous video** (the last
   entry in `published.json`) plus subscribe.
+- **Description:** write `WORKDIR/youtube.txt` with the title, a 2–3 line summary, chapters (from the
+  part-card times), and **all the script's SOURCES as links**. Research sources go only in the
+  description. On-screen credit is only for sources the narration quotes or names.
 - After publishing, append `{"title": ..., "url": ..., "date": ...}` to `cutout-video/published.json`
   so the next episode links back to this one.
 _Not set up yet. It needs YouTube Data API access to the channel (OAuth)._

@@ -111,6 +111,10 @@ HANDOFF                link to the previous video posted + a one-line subscribe 
   bank").
 - **Advertiser-safe.** No swearing, no graphic violence, no slurs (even quoted), and no medical or
   financial advice. Facts with sources.
+- **Research sources go in the YouTube description.** Everything used to research and fact-check the
+  script (the `SOURCES:` list) is linked in the description, not labelled on screen.
+  **Exception:** when the narration quotes or names a source ("The Guardian reported…", "Reuters says…",
+  a newspaper headline), credit it on screen where it's relevant, e.g. on the newspaper prop.
 - **Titles and thumbnails** promise what the hook delivers, never more.
 
 ## 6. Writing for the voice and the visuals
