@@ -2,11 +2,13 @@
 import math, sys, subprocess, os, random
 import numpy as np
 from PIL import Image
-import art, scenes
+import art, kit
+from kit import load_episode
+scenes = load_episode()
 from art import W, H
 
 FPS = 12  # cutout-style stepped animation, output upsampled to 24fps
-WORK = os.path.dirname(os.path.abspath(__file__))
+WORK = os.environ.get("WORKDIR", os.getcwd())
 
 _rms = None
 

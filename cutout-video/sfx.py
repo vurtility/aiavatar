@@ -1,6 +1,9 @@
 """Synthesise sound effects and mix them under the narration."""
 import numpy as np, subprocess, sys
-import scenes
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from kit import load_episode
+scenes = load_episode()
 
 SR = 44100
 rng = np.random.default_rng(7)
