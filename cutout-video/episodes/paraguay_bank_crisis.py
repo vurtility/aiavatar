@@ -533,7 +533,7 @@ def build():
     ]))
     S.append(Scene(660.0, "studio", [
         L("DOM TALKS POLITICS", W / 2, 380, t=660.0, size=110, rot=-2, bgc=(255, 230, 120), enter="slam"),
-        L("SUBSCRIBE FOR MORE FOOTNOTES", W / 2, 600, t=660.6, size=56, rot=2, bgc=(255, 255, 255)),
+        L("SUBSCRIBE FOR MORE", W / 2, 600, t=660.6, size=56, rot=2, bgc=(255, 255, 255)),
         P(art.sound_block(), 1500, 960, t=660.0, anchor="c"),
         gavel_actor(1500, 930, 660.15),
     ]))

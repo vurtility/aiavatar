@@ -23,11 +23,13 @@ blocked in cloud sessions.
   confirmed, what's alleged and what's denied, and get each side's response.
 - **Write it** following `cutout-video/SCRIPT_STYLE.md`:
   - a paradox hook in the first 15 seconds and a promise by 30 seconds
-  - "why it matters" at least 3 times, "let's break this down" at least twice
+  - 1–3 subtle "why it matters" moments, and "let's break this down" at least twice
   - at least one misconception call-out, a recap at the end of each part, and story links between parts
-  - a caveat, the footnote close and a next-video handoff
-  - fair to both sides; 8–12 minutes (1,300–1,900 words); short sentences; quotes of 25 words or fewer,
-    written as `QUOTE (Name): "…"`
+  - a caveat, a callback close, and a handoff pointing to the **previous video posted** (the last entry
+    in `published.json`; leave the link out for the very first video)
+  - not partisan, but Dom gives 1–2 honest personal opinions that don't pick a side
+  - 8–12 minutes (1,300–1,900 words); short sentences; quotes of 25 words or fewer, written as
+    `QUOTE (Name): "…"`
 - Save it as `cutout-video/scripts/<slug>.txt` in the file format from the style guide.
 - **Gate:** `python3 script_check.py scripts/<slug>.txt` must print PASS. Then reread the whole script as
   a sceptical viewer from the *other* political side. If it would feel like a hit piece to them, fix it.
@@ -139,6 +141,10 @@ blocked in cloud sessions.
   they're held elsewhere.
 
 ## 10. YouTube upload
+- The end card holds for 20 seconds so YouTube's end screen fits: the **previous video** (the last
+  entry in `published.json`) plus subscribe.
+- After publishing, append `{"title": ..., "url": ..., "date": ...}` to `cutout-video/published.json`
+  so the next episode links back to this one.
 _Not set up yet. It needs YouTube Data API access to the channel (OAuth)._
 
 ## Standard opening (every episode)

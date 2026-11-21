@@ -35,12 +35,12 @@ minutes long and about 2,000–3,700 words, told in the first person.
 | **End-screen handoff** | Sends viewers to the next specific video, explaining why it continues this one. | "The next video you should watch is all about how Trump broke the populist international right…" |
 
 **What we copy:** the paradox hook, misconception flip, news-peg-to-idea structure, define-before-argue,
-numbered recaps, signposting, absurd details, honest voice and the end-screen handoff.
+numbered recaps, signposting, absurd details, honest voice and the callback ending.
 
 **What we change:**
-- **Not partisan.** The reference channel argues one side. For the widest US audience (and the most
-  revenue), Dom is fair to both sides and has opinions about *how things work and what's true*, not about
-  which team wins. He calls out misconceptions held by left *and* right.
+- **Not partisan, but not bland.** The reference channel argues one side. Dom never backs a party or
+  tells people how to vote, and he calls out misconceptions held by left *and* right. But he does have
+  real opinions about people, ideas and decisions (see section 2).
 - **No real clips or voice clones.** We can't play news footage or synthesise a real politician's voice.
   Quotes are short, read by Dom ("in his words…"), and shown on screen as a speech bubble from the
   character.
@@ -58,8 +58,13 @@ numbered recaps, signposting, absurd details, honest voice and the end-screen ha
 - **Honest.** Say "here's what we know, here's what we don't". Present allegations as allegations, and
   include the other side's response.
 - **A bit of dry humour**, mostly from absurd real details, never from mocking ordinary people.
-- **Dom has opinions about clarity and fairness.** For example, "this is a bad argument", "both sides get
-  this wrong", "this is the bit nobody's talking about".
+- **Dom has opinions, not a team.** Give one or two honest, personal takes per video that don't pick a
+  side but make the content richer. Weigh the praise and the criticism, and own them as his view.
+  - "I think Elon Musk is one of the greatest inventors of our time, but he needs to be very careful
+    putting his oar into politics."
+  - "Honestly? I think both parties like the filibuster more when they're losing."
+  - "I'd be furious if this were my pension."
+  Never use: voting advice, party cheerleading, insults, or opinions presented as fact.
 
 ## 3. Required beats (every script)
 
@@ -67,15 +72,15 @@ numbered recaps, signposting, absurd details, honest voice and the end-screen ha
 |---|---|---|
 | **Paradox hook** (first 15s) | Stop the scroll with a puzzle or surprising fact. | "One bank collapsed, and a president lost his job. That's not supposed to happen." |
 | **Promise** (by 30s) | Tell the viewer what they'll understand by the end. | "By the end of this you'll understand why… and the one thing that'll tell you what happens next." |
-| **Why it matters** (≥3 times) | Connect each fact to the viewer's life, money or rights. | "This matters because…" / "Here's why you should care…" |
+| **Why it matters** (1–3 per video, subtle) | Connect the story to the viewer's life, money or rights. Save it for the moments that really matter, and work it into the sentence rather than announcing it every time. | "…which is a big deal if your pension's in a bank like that." / "This matters because…" |
 | **Pause and break it down** (≥2 times) | Slow down on the hard bit. | "Let's stop there for a second, because you need to get this bit." |
 | **Misconception call-out** (≥1 time, ideally one per side) | Correct what people get wrong. | "You'll hear people say X. That's not quite right…" |
 | **Define the jargon** (every new term) | No unexplained words. | "Impeachment, which basically means Congress puts the president on trial…" |
 | **Story link** (between every part) | Each part answers a question the last one raised. | "So the money's in. Now watch what happens when people want it back." |
 | **Recap beat** (end of each part) | One line so nobody gets lost. | "So that's the first piece: the bank grew too fast, with too much public money." |
 | **Caveat** (near the end) | Proportion builds trust. | "Now, I don't want to overstate this…" |
-| **Footnote close** | The one thing to remember. A channel signature. | "So, here's the footnote: …" |
-| **Next-video handoff** | Sends the viewer to a specific next video. | "If you want to know why X, watch this one next, because…" |
+| **Callback close** | The opening puzzle, answered in one memorable line: the thing to remember. | "So a cashback app really did bring down a president, because nobody was watching the people watching the bank." |
+| **Previous-video handoff** | The last line points to the **previous video posted** (it's on the end screen). Skip it for the very first video. | "And if you missed last week's video on how impeachment actually works, it's right here." |
 
 ## 4. Structure
 
@@ -85,8 +90,8 @@ INTRO + TITLE          "Hi, I'm Dom, and this is Dom Talks Politics. Today's epi
 PART 1..N (4–7 parts)  each one: story link in → facts → why it matters → break it down → recap
 THE TWIST              the counter-intuitive turn ("Here's the twist…")
 CAVEAT                 what we don't know / both sides
-FOOTNOTE CLOSE         callback to the opening paradox, turned into a lesson
-HANDOFF                next video + a one-line subscribe ask (no begging, no Patreon pitch)
+CLOSE                  callback to the opening paradox, turned into a lesson
+HANDOFF                link to the previous video posted + a one-line subscribe ask (omit the link on video #1)
 ```
 
 **Trending vs evergreen:**
@@ -98,6 +103,8 @@ HANDOFF                next video + a one-line subscribe ask (no begging, no Pat
 
 ## 5. Revenue rules
 
+- **End screen:** hold the end card for 20 seconds after the last line, so YouTube's end-screen
+  elements fit (the previous video, plus subscribe). The previous video comes from `published.json`.
 - **Length 8–12 min.** At 8 minutes or more, mid-rolls can run. End each part on an open question so a
   mid-roll at a part break doesn't lose the viewer.
 - **US focus.** Use US stakes even for foreign stories ("why Washington cares", "what it means for your
@@ -140,8 +147,9 @@ QUOTE (Santiago Peña): "I was an investor. I'm an economist."
 …
 [TWIST]
 [CAVEAT]
-[FOOTNOTE]
+[CLOSE]
 [HANDOFF]
+And if you missed my last video, on <previous title>, it's right here.
 ```
 `script_check.py` lints the file: length, sentence length, required beats, quote length, part count,
 sources, and banned or unsafe words. The pipeline won't move on to recording until it passes.

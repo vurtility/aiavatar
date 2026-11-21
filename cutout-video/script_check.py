@@ -8,7 +8,8 @@ import re, sys
 WPM = 150  # Dom's narration pace
 BEATS = {  # beat: (patterns, minimum count)
     "why it matters": ([r"this matters because", r"why (this|that|it) matters", r"why you should care",
-                        r"here'?s why", r"what (this|that) means for you", r"matters to you"], 3),
+                        r"here'?s why", r"what (this|that) means for you", r"matters to you", r"big deal",
+                        r"if your (pension|savings|money|bank|job)"], 1),
     "pause and break it down": ([r"let'?s (stop|pause)", r"break (it|this|that) down", r"you need to (get|understand)",
                                  r"slow down", r"bear with me"], 2),
     "misconception": ([r"people (often )?(say|think|assume)", r"you'?ll hear", r"(most|a lot of) (people|coverage)",
@@ -16,9 +17,10 @@ BEATS = {  # beat: (patterns, minimum count)
                        r"actually,"], 1),
     "recap": ([r"so that'?s (the )?(first|second|third|reason|piece|part)", r"so,? to recap", r"so far"], 2),
     "caveat": ([r"i don'?t want to overstate", r"to be fair", r"we don'?t (yet )?know", r"of course,"], 1),
-    "footnote close": ([r"here'?s the footnote"], 1),
 }
-SECTIONS = ["COLD OPEN", "INTRO", "PART", "FOOTNOTE", "HANDOFF"]
+SECTIONS = ["COLD OPEN", "INTRO", "PART", "CLOSE", "HANDOFF"]
+PUBLISHED = __import__("os").path.join(__import__("os").path.dirname(__import__("os").path.abspath(__file__)),
+                                       "published.json")
 UNSAFE = [r"\bf+u+c+k", r"\bshit", r"\bbitch", r"\bbastard", r"\bretard", r"\bkill (yourself|them all)",
           r"you should (buy|sell|invest)", r"\bguaranteed returns?\b"]
 
@@ -67,6 +69,20 @@ def main(path, partial=False):
             c = sum(len(re.findall(p, low)) for p in pats)
             if c < need:
                 errs.append(f"beat '{beat}': found {c}, need ≥ {need}")
+        c = sum(len(re.findall(p, low)) for p in BEATS["why it matters"][0])
+        if c > 3:
+            warns.append(f"'why it matters' used {c} times - keep it to 1-3, subtle")
+        # handoff: link the previous published video (none for the first video)
+        import json, os
+        pub = json.load(open(PUBLISHED)) if os.path.exists(PUBLISHED) else []
+        hand = body.split("[HANDOFF]", 1)[1].lower() if "[HANDOFF]" in body else ""
+        if pub:
+            prev = pub[-1]["title"].lower()
+            key = [w for w in re.findall(r"[a-z']{4,}", prev)][:4]
+            if not any(k in hand for k in key):
+                errs.append(f"[HANDOFF] must point to the previous video: \"{pub[-1]['title']}\"")
+        elif "last video" in hand or "previous video" in hand:
+            errs.append("first video: there is no previous video to link - remove that line from [HANDOFF]")
         hook = " ".join(spoken[:6])  # first ~15 seconds
         if "?" not in hook and not re.search(r"\b(but|yet|and yet|somehow|shouldn'?t|wasn'?t supposed)\b", hook.lower()):
             warns.append("cold open has no paradox/question in its first lines")
