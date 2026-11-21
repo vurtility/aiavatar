@@ -284,10 +284,15 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
         q.chord(cx + 98, hy + 6, 40, 80, 270, 90, hc)
     elif hair == "side":
         q.chord(cx, hy - 24, 226, 150, 180, 360, hc)
-        q.line([(cx - 40, hy - 96), (cx - 30, hy - 40)], fill=sk, w=4)
+        # side parting: a darker groove on the left, with the fringe sweeping across to the right
+        q.line([(cx - 52, hy - 88), (cx - 44, hy - 52)], fill=tuple(int(c * 0.6) for c in hc), w=3)
+        q.poly([(cx - 44, hy - 52), (cx + 30, hy - 76), (cx + 112, hy - 40), (cx + 106, hy - 24),
+                (cx + 20, hy - 34)], hc, ol=None)
     elif hair == "slick":  # short, neat, swept back
         q.chord(cx, hy - 30, 222, 140, 180, 360, hc)
-        q.line([(cx - 70, hy - 84), (cx + 60, hy - 90)], fill=tuple(min(255, c + 50) for c in hc), w=3)
+        comb = tuple(int(c * 0.78) for c in hc)  # subtle combed-back grooves
+        for dy_ in (-80, -62):
+            q.arc(cx, hy + dy_ + 40, 150, 60, 200, 340, fill=comb, wd=2)
     elif hair == "bun":
         q.chord(cx, hy - 20, 228, 160, 180, 360, hc)
         q.ell(cx, hy - 110, 70, 56, hc)
@@ -453,7 +458,7 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
         q.ell(cx + 70, hy - 70, 12, 12, (250, 220, 80))
     elif hat == "helmet":
         q.chord(cx, hy - 50, 220, 150, 180, 360, (40, 50, 70))
-        q.rect(cx - 70, hy - 66, cx + 70, hy - 30, (150, 200, 230), ow=2)
+        q.rect(cx - 74, hy - 98, cx + 74, hy - 68, (150, 200, 230), ow=2, r=6)  # visor raised above the eyes
     head = q.im
     if abs(head_h - 1) > 1e-3:  # stretch/squash vertically about the chin (y=236)
         chin = (236 + TOP) * K
@@ -604,17 +609,17 @@ CAST = {
                     head_h=1.06),
     "cbchief": dict(skin="light", hair="side", hair_col=(120, 120, 120), outfit="suit", col=(90, 95, 105),
                     tie=(40, 120, 90), glasses=True, build=0.95),
-    "newchief": dict(skin="tan", hair="short", hair_col=(50, 40, 30), outfit="suit", col=(70, 60, 90),
-                     tie=(200, 160, 40), build=1.1),
-    "regulator": dict(skin="brown", hair="short", hair_col=(30, 25, 20), outfit="suit", col=(80, 80, 90),
+    "newchief": dict(skin="tan", hair="receding", hair_col=(150, 150, 150), outfit="suit", col=(70, 60, 90),
+                     tie=(200, 160, 40), build=1.25, mustache=(150, 150, 150)),
+    "regulator": dict(skin="brown", hair="buzz", hair_col=(30, 25, 20), outfit="suit", col=(80, 80, 90),
                       tie=(90, 60, 160), glasses=True, build=0.9),
     "finchief": dict(skin="tan", hair="bun", hair_col=(60, 35, 25), outfit="dress", col=(150, 50, 90),
                      glasses=True, build=0.95),
     "senator": dict(skin="brown", hair="curly", hair_col=(30, 25, 20), outfit="suit", col=(110, 40, 40),
                     tie=(240, 200, 60), mustache=True, build=1.2),
-    "exec": dict(skin="light", hair="slick", hair_col=(40, 30, 25), outfit="suit", col=(25, 25, 30),
+    "exec": dict(skin="light", hair="slick", hair_col=(165, 110, 50), outfit="suit", col=(25, 25, 30),
                  tie=(20, 140, 120), build=1.05),
-    "lawyer": dict(skin="brown", hair="short", hair_col=(25, 20, 15), outfit="suit", col=(60, 50, 40),
+    "lawyer": dict(skin="brown", hair="afro", hair_col=(25, 20, 15), outfit="suit", col=(60, 50, 40),
                    tie=(120, 30, 30), glasses=True, build=0.9),
     # Pedro Alliana: heavier build, dark hair, thick moustache
     "alliana": dict(skin="tan", hair="short", hair_col=(30, 25, 20), outfit="suit", col=(50, 70, 50),
