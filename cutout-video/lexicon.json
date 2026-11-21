@@ -18,5 +18,8 @@
   "Rubio": {"say": "Rubio", "guide": "ROO-bee-oh"},
   "Colorado": {"say": "Colorado", "guide": "as in the US state"},
   "IPS": {"say": "I.P.S.", "guide": "spell it out"},
-  "IMF": {"say": "I.M.F.", "guide": "spell it out"}
+  "IMF": {"say": "I.M.F.", "guide": "spell it out"},
+  "Hakeem": {"say": "Hah-keem", "guide": "hah-KEEM"},
+  "Jeffries": {"say": "Jeffries", "guide": "JEF-reez"},
+  "chuse": {"say": "choose", "guide": "CHOOZ (old spelling of 'choose' in the Constitution)"}
 }

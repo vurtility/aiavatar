@@ -32,6 +32,20 @@ Twelve Critics Players Prosecutors Investigators Reuters Guardian Photos Hours T
 Every Its Here's That's Because South America American US UK""".split())
 
 
+def spoken(path):
+    """Only the words Dom reads: drop the header block, [SECTION] labels, source links and QUOTE (who):."""
+    raw = open(path).read()
+    if re.match(r"^[A-Z]+:", raw):
+        raw = raw.split("\n\n", 1)[1] if "\n\n" in raw else raw
+    out = []
+    for l in raw.splitlines():
+        t = l.strip()
+        if not t or t.startswith("[") or t.startswith("#") or t.startswith("- http"):
+            continue
+        out.append(re.sub(r'^QUOTE \([^)]*\):\s*', "", t).strip('"'))
+    return "\n".join(out)
+
+
 def load_lex():
     return json.load(open(LEX)) if os.path.exists(LEX) else {}
 
@@ -72,7 +86,7 @@ def hard_terms(text, lex):
 
 
 def prep(script, work):
-    text = open(script).read()
+    text = spoken(script)
     lex = load_lex()
     terms = hard_terms(text, lex)
     os.makedirs(work, exist_ok=True)
@@ -107,7 +121,7 @@ def prep(script, work):
 
 
 def verify(script, work):
-    text = open(script).read()
+    text = spoken(script)
     lex = load_lex()
     terms = hard_terms(text, lex)
     key = {norm(w) for t in terms for w in t.split()}
