@@ -337,6 +337,8 @@ CAST = {
                     tie=(40, 120, 90), glasses=True),
     "newchief": dict(skin="tan", hair="short", hair_col=(50, 40, 30), outfit="suit", col=(70, 60, 90),
                      tie=(200, 160, 40)),
+    "regulator": dict(skin="brown", hair="short", hair_col=(30, 25, 20), outfit="suit", col=(80, 80, 90),
+                      tie=(90, 60, 160), glasses=True),
     "finchief": dict(skin="tan", hair="bun", hair_col=(60, 35, 25), outfit="dress", col=(150, 50, 90),
                      glasses=True),
     "senator": dict(skin="brown", hair="curly", hair_col=(30, 25, 20), outfit="suit", col=(110, 40, 40),
@@ -553,7 +555,9 @@ def stamp(txt, col=(200, 30, 40), size=70, rot=-12):
     rng = np.random.default_rng(len(txt))
     mask = rng.random(a.shape) > 0.12
     im.putalpha(Image.fromarray((a * mask * 0.9).astype(np.uint8)))
-    return im.rotate(rot, expand=True, resample=Image.BICUBIC)
+    im = im.rotate(rot, expand=True, resample=Image.BICUBIC)
+    im.info.update(kind="stamp", text=txt)
+    return im
 
 
 def label(txt, size=56, bg=(255, 252, 235), fg=INK, rot=0.0, kind="title", pad=26):
@@ -579,29 +583,31 @@ def label(txt, size=56, bg=(255, 252, 235), fg=INK, rot=0.0, kind="title", pad=2
     im = p.done()
     if rot:
         im = im.rotate(rot, expand=True, resample=Image.BICUBIC)
+    im.info.update(kind="label", text=txt)
     return im
 
 
 def bubble(txt, size=46, tail="left", w_max=None):
+    """Speech bubble sized so the text block sits fully inside the ellipse (x1.42 of the text box)."""
     lines = txt.split("\n")
     lh = int(size * 1.2)
     tw = max(text_size(l, size, "hand")[0] for l in lines)
-    w, h = tw + 80, lh * len(lines) + 60
-    p = Pen(w + 20, h + 70)
-    p.ell(10 + w / 2, 10 + h / 2, w, h, (255, 255, 255), ow=4)
-    if tail == "left":
-        p.poly([(10 + w * 0.25, 10 + h * 0.8), (10 + w * 0.12, h + 62), (10 + w * 0.4, 10 + h * 0.9)],
-               (255, 255, 255), ow=4)
-        p.poly([(10 + w * 0.25, 10 + h * 0.78), (10 + w * 0.4, 10 + h * 0.86), (10 + w * 0.3, 10 + h * 0.7)],
-               (255, 255, 255), ol=None)
-    else:
-        p.poly([(10 + w * 0.75, 10 + h * 0.8), (10 + w * 0.88, h + 62), (10 + w * 0.6, 10 + h * 0.9)],
-               (255, 255, 255), ow=4)
-        p.poly([(10 + w * 0.75, 10 + h * 0.78), (10 + w * 0.6, 10 + h * 0.86), (10 + w * 0.7, 10 + h * 0.7)],
-               (255, 255, 255), ol=None)
+    th = lh * len(lines)
+    w, h = (tw + 30) * 1.42, (th + 16) * 1.42
+    p = Pen(int(w + 20), int(h + 80))
+    cx, cy = 10 + w / 2, 10 + h / 2
+    p.ell(cx, cy, w, h, (255, 255, 255), ow=4)
+    s = 1 if tail == "left" else -1
+    bx = cx - s * w * 0.22
+    p.poly([(bx - 0.08 * w, cy + h * 0.36), (cx - s * w * 0.36, h + 72), (bx + 0.08 * w, cy + h * 0.38)],
+           (255, 255, 255), ow=4)
+    p.ell(bx, cy + h * 0.33, 0.2 * w, 0.12 * h, (255, 255, 255), ol=None)
     for i, l in enumerate(lines):
-        p.text(10 + w / 2, 10 + 30 + lh * i + lh * 0.45, l, size, kind="hand")
-    return p.done()
+        p.text(cx, cy - th / 2 + lh * (i + 0.5), l, size, kind="hand")
+    im = p.done()
+    im.info.update(kind="bubble", text=txt, ellipse=(cx, cy, w / 2 - 2, h / 2 - 2),
+                   textbox=(cx - tw / 2, cy - th / 2, cx + tw / 2, cy + th / 2))
+    return im
 
 
 def document(title="", lines=6, w=300, h=380, col=(255, 255, 250)):
@@ -1178,3 +1184,32 @@ def paraguay_sprite():
     p.poly(par, (220, 70, 60), ow=6)
     p.text(615, 590, "PARAGUAY", 40, fill=(255, 255, 255), stroke=3, stroke_fill=INK)
     return p.done()
+
+
+# scenery: sits behind characters/props by design (buildings, desks, podiums, maps)
+SCENERY = {"building", "map_sprite", "desk", "podium", "sound_block", "desk_mic"}
+# overlay: deliberately drawn over something else (ice over a vault, bars over a prisoner)
+OVERLAY = {"ice_block", "jail_bars", "needle", "paraguay_sprite", "rock", "window_pane", "hand_stop"}
+
+# tag every drawn sprite with the function that made it, so QA reports can name it
+def _tagged(fn):
+    @functools.wraps(fn)
+    def wrap(*args, **kw):
+        im = fn(*args, **kw)
+        if isinstance(im, Image.Image):
+            im.info.setdefault("what", fn.__name__)
+            if fn.__name__ in SCENERY:
+                im.info.setdefault("kind", "scenery")
+            elif fn.__name__ in OVERLAY:
+                im.info.setdefault("kind", "overlay")
+        return im
+    return wrap
+
+
+for _n in ["phone", "building", "money_bag", "coin", "cash_stack", "ice_block", "vault", "gavel", "sound_block",
+           "document", "paper_stack", "jail_bars", "yacht", "plane", "dam", "scales", "ballot_box", "rocket_chart",
+           "risk_meter", "needle", "shield", "scroll", "board", "tv", "newspaper", "calendar", "clock", "rock",
+           "window_pane", "magnifier", "question", "arrow", "bull", "gas_pump", "cart", "radio", "football",
+           "podium", "desk", "desk_mic", "chair", "badge", "hand_stop", "flag_py", "flag_us", "fish",
+           "map_sprite", "paraguay_sprite"]:
+    globals()[_n] = _tagged(globals()[_n])

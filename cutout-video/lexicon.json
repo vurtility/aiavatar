@@ -1,0 +1,22 @@
+{
+  "Peña": {"say": "Penya", "guide": "PEN-yah"},
+  "Santiago Peña": {"say": "Santiago Penya", "guide": "san-tee-AH-go PEN-yah"},
+  "ueno": {"say": "weh-no", "guide": "WEH-no (brand is lowercase)"},
+  "Vázquez": {"say": "Vahskez", "guide": "VAHS-kez"},
+  "Grupo": {"say": "Groopo", "guide": "GROO-po"},
+  "Cartes": {"say": "Kartes", "guide": "KAR-tess"},
+  "Horacio": {"say": "Orasio", "guide": "oh-RAH-see-oh (silent H)"},
+  "Alliana": {"say": "Ah-zhee-ah-na", "guide": "ah-zhee-AH-nah (Paraguayan 'll' = zh)"},
+  "Asunción": {"say": "Ahsoon-see-own", "guide": "ah-soon-see-OWN"},
+  "Itaipú": {"say": "Ee-tie-poo", "guide": "ee-tie-POO"},
+  "Yacyretá": {"say": "Yah-sir-eh-tah", "guide": "yah-sir-eh-TAH"},
+  "Paraguay": {"say": "Paraguay", "guide": "PAIR-uh-gwai (English)"},
+  "Paraguayans": {"say": "Paraguayans", "guide": "pair-uh-GWAI-uhns"},
+  "Visión": {"say": "Vee-see-own", "guide": "vee-see-OWN"},
+  "Lugo": {"say": "Loogo", "guide": "LOO-go"},
+  "Bessent": {"say": "Bessent", "guide": "BESS-ent"},
+  "Rubio": {"say": "Rubio", "guide": "ROO-bee-oh"},
+  "Colorado": {"say": "Colorado", "guide": "as in the US state"},
+  "IPS": {"say": "I.P.S.", "guide": "spell it out"},
+  "IMF": {"say": "I.M.F.", "guide": "spell it out"}
+}

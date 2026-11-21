@@ -9,13 +9,19 @@ GROUND = 960
 
 class Actor:
     def __init__(self, img, x, y, t=None, anchor="bc", enter="pop", idle="bob", talk=(), out=None,
-                 move=None, fall=None, swing=None, phase=0.0, spin=0.0, dur=0.32, blink=True):
+                 move=None, fall=None, swing=None, phase=0.0, spin=0.0, dur=0.32, blink=True, kind=None,
+                 ok=False, name=None):
+        """kind: char/label/bubble/stamp/prop (auto from art tags). ok=True: allowed to overlap others
+        (deliberate layering, e.g. ice over a vault, bars over a prisoner)."""
         self.v = img if isinstance(img, dict) else {"closed": img}
         self.x, self.y, self.t, self.anchor = x, y, t, anchor
         self.enter, self.idle, self.talk, self.out = enter, idle, talk, out
         self.move, self.fall, self.swing, self.phase, self.spin = move, fall, swing, phase, spin
         self.dur, self.blink = dur, blink
         self._cache = {}
+        first = next(iter(self.v.values()))
+        self.kind = kind or first.info.get("kind", "prop")
+        self.ok, self.name = ok, name or first.info.get("text", "") or first.info.get("what", "")
 
 
 class Scene:
@@ -26,7 +32,7 @@ class Scene:
 def C(name, x, y=GROUND, t=None, talk=(), scale=1.15, flip=False, mouth="closed", eyes="normal", **kw):
     a = kw.pop("a", {})
     v = art.char_set(name, scale=scale, flip=flip, mouth=mouth, eyes=eyes, **kw)
-    return Actor(v, x, y, t=t, talk=talk, phase=(x % 97) / 97.0, **a)
+    return Actor(v, x, y, t=t, talk=talk, phase=(x % 97) / 97.0, kind="char", name=name, **a)
 
 
 def L(text, x, y, t=None, size=58, rot=-2.0, bgc=(255, 252, 235), fg=art.INK, **a):
@@ -49,7 +55,7 @@ def crowd(x0, x1, y, n, scale=0.62, seed=0, t=None, hold=None, mouth="closed", e
             img = art.crowd_person(k, scale=scale * (1 - 0.12 * r), mouth=mouth, eyes=eyes, hold=hd,
                                    flip=flipmix and (k % 3 == 0), arms=arms)
             out.append(Actor(img, x, y - r * 60, t=None if t is None else t + 0.05 * i, phase=k * 0.37,
-                             enter=enter))
+                             enter=enter, kind="char", name="crowd", ok="crowd"))
     out.sort(key=lambda a: -a.y)
     return out[::-1]
 
@@ -60,7 +66,7 @@ def gavel_actor(x, y, impact):
     pad = Image.new("RGBA", (900, 900), (0, 0, 0, 0))
     # handle end (right) at pad centre
     pad.alpha_composite(g, (450 - g.width + 20, 450 - g.height // 2))
-    return Actor(pad, x + 307, y - 65, t=impact - 1.2, anchor="c", enter="drop", idle="none", swing=impact)
+    return Actor(pad, x + 307, y - 65, t=impact - 1.2, anchor="c", enter="drop", idle="none", swing=impact, ok=True, name="gavel")
 
 
 def part_card(start, num, title, col):

@@ -3,7 +3,7 @@
 # Hugging Face may be blocked in cloud sessions, so the model comes from npm
 # (Whisper small, CTranslate2 int8, split into 4 packages) and is checksum-verified.
 set -euo pipefail
-pip install -q faster-whisper numpy pillow
+pip install -q faster-whisper numpy pillow wordfreq
 M="${WHISPER_MODEL:-$HOME/.cache/cutout-video/whisper-small}"
 if [ -f "$M/model.bin" ]; then echo "model ready: $M"; exit 0; fi
 mkdir -p "$M"; T=$(mktemp -d)
