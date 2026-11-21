@@ -195,9 +195,9 @@ def build():
     S.append(Scene(199.3, "chamber", [
         C("senator", 560, GROUND, t=199.3, talk=[(199.32, 205.44)], eyes="angry", mouth="shout",
           arms="up"),
-        P(art.bubble("\"The biggest swindle\nfrom political power of\nParaguay's democratic era!\"", 50),
-          1200, 470, t=199.6, anchor="c", id="swindle", target="senator"),
-        L("OPPOSITION SENATOR", 400, 330, t=199.8, size=46, rot=-3),
+        SAY("\"The biggest swindle\nfrom political power of\nParaguay's democratic era!\"", "senator", t=199.6,
+            size=50, id="swindle"),
+        L("OPPOSITION\nSENATOR", 215, 560, t=199.8, size=40, rot=-3),
         L("ALLEGATION - NOT PROVEN", 1200, 800, t=206.2, size=56, rot=-4, bgc=(255, 140, 120), enter="slam"),
     ]))
     # --- part 4
@@ -208,7 +208,7 @@ def build():
         L("47 · ECONOMIST", 1250, 220, t=216.6, size=58, rot=2, bgc=(255, 255, 255)),
         L("EX CENTRAL BANK & IMF", 1250, 380, t=219.4, size=52, rot=-2, bgc=(220, 240, 255), out=225.5),
         C("cartes", 1250, GROUND + 40, t=222.6, scale=0.95, mouth="smile"),
-        P(art.bubble("\"A bright\nyoung man!\"", 46, tail="left"), 1640, 560, t=225.6, anchor="c", target="cartes"),
+        SAY("\"A bright\nyoung man!\"", "cartes", t=225.6, size=46),
         L("FINANCE MINISTER UNDER CARTES", 1250, 520, t=223.4, size=40, rot=1, out=225.5),
     ]))
     S.append(Scene(228.8, "street_py", [
@@ -232,8 +232,8 @@ def build():
     S.append(Scene(250.5, "office_in", [
         C("pena", 560, GROUND - 30, t=250.6, talk=[(251.58, 253.44)]),
         P(art.podium("PRESIDENCY"), 560, 1010, t=250.6, enter="none"),
-        L("HIS DEFENCE:", 1300, 160, t=250.6, size=58, rot=-2),
-        P(art.bubble("\"I was an investor.\nI'm an economist.\"", 56), 1250, 400, t=251.6, anchor="c", target="pena"),
+        L("HIS DEFENCE:", 1500, 110, t=250.6, size=58, rot=-2),
+        SAY("\"I was an investor.\nI'm an economist.\"", "pena", t=251.6, size=56),
         L("\"NO LINK TO ueno BANK ITSELF\"", 1250, 760, t=254.6, size=50, rot=2, bgc=(255, 255, 255)),
     ]))
     S.append(Scene(258.2, "street", [
@@ -243,8 +243,7 @@ def build():
           col=(200, 120, 60)),
         C("reporter", 1500, GROUND, t=258.8, scale=1.0, vary=82, skin="pale", col=(90, 90, 170)),
         L("STATE & PENSION MONEY\nSTEERED TO ueno?", 640, 200, t=259.2, size=50, rot=-2, out=263.0),
-        P(art.bubble("\"A false media\ncampaign!\"", 56, tail="left"), 1250, 300, t=263.0, anchor="c", out=266.1,
-          target="pena"),
+        SAY("\"A false media\ncampaign!\"", "pena", t=263.0, size=56, out=266.1),
         L("ueno: \"NO DIRECT RELATIONSHIP\"", 960, 120, t=266.2, size=50, rot=2, bgc=(160, 230, 210)),
     ]))
     # --- part 5
@@ -296,8 +295,7 @@ def build():
             skin=["tan", "brown", "light", "tan", "brown"][i]) for i in range(5)],
         C("lawyer", 1380, GROUND, t=323.7),
         L("10 PLAYERS HIRE A LAWYER", 520, 170, t=323.9, size=58, rot=-2),
-        P(art.bubble("\"The bank lied\nto footballers!\"", 46, tail="right"), 1150, 300, t=325.2, anchor="c", target="lawyer",
-          out=329.5),
+        SAY("\"The bank lied\nto footballers!\"", "lawyer", t=325.2, size=46, out=329.5, side="left"),
         P(art.document("TEAM LETTER", 4, 260, 320), 1700, 960, t=328.0),
         L("\"A FORCEFUL RESPONSE\"", 1300, 320, t=329.6, size=46, rot=3, bgc=(255, 230, 120)),
     ]))
@@ -385,13 +383,12 @@ def build():
     S.append(part_card(447.6, 8, "THE GODFATHER", "paper_green"))
     S.append(Scene(449.8, "chamber", [
         C("cartes", 700, GROUND, t=453.8, talk=[(462.66, 470.64)], a={"idle": "bob"}),
-        L("HORACIO CARTES", 560, 330, t=454.0, size=56, rot=-2),
+        L("HORACIO\nCARTES", 300, 560, t=454.0, size=48, rot=-2),
         L("THE BLOW CAME FROM\nINSIDE HIS OWN PARTY", W / 2, 160, t=449.9, size=56, rot=2, out=453.8),
         L("COLORADO PARTY LEADER\n& PEÑA'S MENTOR", 1350, 330, t=455.0, size=50, rot=2, out=462.5),
-        P(art.bubble("\"We will not stand on the\nside of the theft of public,\nprivate and pensioners' funds.\"", 44),
-          1300, 330, t=462.7, anchor="c", out=468.6, target="cartes"),
-        P(art.bubble("\"We support the\nimpeachment of\nthe president.\"", 50), 1300, 330, t=468.6, anchor="c",
-          target="cartes"),
+        SAY("\"We will not stand on the\nside of the theft of public,\nprivate and pensioners' funds.\"", "cartes",
+            t=462.7, size=44, out=468.6),
+        SAY("\"We support the\nimpeachment of\nthe president.\"", "cartes", t=468.6, size=50),
     ]))
     S.append(Scene(471.5, "chamber", [
         C("pena", 520, GROUND, t=471.5, eyes="worried", mouth="frown"),
@@ -406,13 +403,10 @@ def build():
     ]))
     S.append(Scene(483.0, "studio", [
         P(art.tv(art.char("pena", mouth="closed", eyes="worried")), 600, 560, t=483.1, anchor="c", id="tv"),
-        L("MEANWHILE... A VIDEO", 600, 180, t=483.2, size=56, rot=-2),
-        P(art.bubble("\"I have decided to\nsubmit my resignation.\"", 48, tail="left"), 1380, 330, t=486.0,
-          anchor="c", out=490.3, target="tv"),
-        P(art.bubble("\"I want to apologise to\nthe people if at any\npoint I failed.\"", 46, tail="left"),
-          1380, 330, t=490.3, anchor="c", out=494.4, target="tv"),
-        P(art.bubble("\"It was never my\nintention to betray\nyour trust.\"", 48, tail="left"), 1380, 330,
-          t=494.4, anchor="c", target="tv"),
+        L("MEANWHILE... A VIDEO", 470, 170, t=483.2, size=56, rot=-2),
+        SAY("\"I have decided to\nsubmit my resignation.\"", "tv", t=486.0, size=48, out=490.3),
+        SAY("\"I want to apologise to\nthe people if at any\npoint I failed.\"", "tv", t=490.3, size=46, out=494.4),
+        SAY("\"It was never my\nintention to betray\nyour trust.\"", "tv", t=494.4, size=48),
     ]))
     # --- part 9
     S.append(part_card(498.2, 9, "TRUMP'S MAN", "paper_blue"))
@@ -486,9 +480,9 @@ def build():
     ]))
     S.append(Scene(585.8, "senate", [
         C("lawyer", 560, GROUND, t=585.9, talk=[(592.76, 594.22)], arms="up"),
-        P(art.bubble("\"72 more hours\nto prepare?\"", 50), 1200, 330, t=586.6, anchor="c", out=592.7, target="lawyer"),
-        P(art.bubble("\"This is not\ndue process!\"", 56), 1200, 330, t=592.8, anchor="c", target="lawyer"),
-        L("PEÑA'S SIDE", 560, 360, t=586.2, size=50, rot=-2),
+        SAY("\"72 more hours\nto prepare?\"", "lawyer", t=586.6, size=50, out=592.7),
+        SAY("\"This is not\ndue process!\"", "lawyer", t=592.8, size=56),
+        L("PEÑA'S\nSIDE", 240, 560, t=586.2, size=46, rot=-2),
     ]))
     S.append(Scene(594.9, "senate", [
         P(art.board([("SENATE SAYS NO", (255, 255, 255)), ("39 - 3", (255, 230, 120))], 760, 380), 760, 460,

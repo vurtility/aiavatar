@@ -151,7 +151,7 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
            beard=False, hat=None, shirt=(240, 240, 240), pants=(50, 50, 60), arms="down", hold=None,
            scale=1.0, flip=False, old=False, look=0, build=1.0, height=1.0, head_w=1.0, brows=None,
            pin=None, cross=False, jowls=False, tie_w=1.0, head="round", head_h=1.0, eye_s=1.0,
-           nose=None, ears=False, hat_col=None):
+           nose=None, ears=False, hat_col=None, detach_sign=False):
     """Cutout character.
     build: body width (0.8 thin, 1.0 average, 1.2 stocky, 1.4 heavy - heavy also gets a belly)
     height: overall size multiplier; head_w: head width multiplier
@@ -226,11 +226,14 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
         p.poly([(xl + 6, 258), (xl + 16, 250), (br - 13, 347), (br - 19, 352)], (255, 255, 255), ol=None)
         p.ell(br - 16, 352, 20, 20, (235, 200, 60), ow=2)
     # arms + mitten hands
-    if arms == "up":
-        p.poly([(xl, 244), (xl + 14, 252), (xl - 10, 180), (xl - 26, 186)], col)
-        p.poly([(xr, 244), (xr - 14, 252), (xr + 10, 180), (xr + 26, 186)], col)
-        p.ell(xl - 20, 172, 30, 30, sk)
-        p.ell(xr + 20, 172, 30, 30, sk)
+    front = Pen(w, h, oy=TOP)  # limbs that must sit in front of the head
+    if hold_is_sign(hold):  # sign stick runs up behind the head from the right hand
+        p.rect(xr - 6, 40, xr + 4, 344, (140, 100, 60), ow=2)
+    if arms == "up":  # hands out wide beside the head, arms drawn over the head's lower edge
+        front.poly([(xl + 4, 240), (xl + 18, 252), (xl - 34, 186), (xl - 48, 196)], col)
+        front.poly([(xr - 4, 240), (xr - 18, 252), (xr + 34, 186), (xr + 48, 196)], col)
+        front.ell(xl - 44, 180, 30, 30, sk)
+        front.ell(xr + 44, 180, 30, 30, sk)
     elif arms == "point":
         p.poly([(xl, 244), (xl + 12, 252), (bl + 12, 340), (bl - 4, 336)], col)
         p.ell(bl + 2, 344, 30, 30, sk)
@@ -247,8 +250,9 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
     # ---- head on its own layer so it can be widened/narrowed per person
     q = Pen(w, h, oy=TOP)
     hy = 138
-    if hair in ("long", "bun"):
-        q.ell(cx, hy + 10, 236, 210, hair_col)
+    if hair == "long":  # hair falls behind the head at the sides, ending level with the cheeks
+        q.rect(cx - 122, hy - 40, cx - 60, hy + 66, hair_col, r=26)
+        q.rect(cx + 60, hy - 40, cx + 122, hy + 66, hair_col, r=26)
     if ears:
         q.ell(cx - 112, hy + 6, 34, 50, sk)
         q.ell(cx + 112, hy + 6, 34, 50, sk)
@@ -289,12 +293,14 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
         q.ell(cx, hy - 110, 70, 56, hc)
     elif hair == "long":
         q.chord(cx, hy - 20, 228, 160, 180, 360, hc)
-    elif hair == "spiky":
-        q.chord(cx, hy - 24, 226, 150, 180, 360, hc)
-        for i in range(7):
-            x = cx - 96 + i * 32
-            q.poly([(x - 18, hy - 70 + abs(i - 3) * 8), (x + 2, hy - 128 + abs(i - 3) * 10),
-                    (x + 18, hy - 70 + abs(i - 3) * 8)], hc)
+    elif hair == "spiky":  # spikes growing out of the crown, no flat cap underneath
+        for i in range(9):
+            t = math.radians(212 + i * 14.5)
+            d = 0.11
+            bx0, by0 = cx + 112 * math.cos(t - d), hy + 97 * math.sin(t - d)
+            bx1, by1 = cx + 112 * math.cos(t + d), hy + 97 * math.sin(t + d)
+            ln = 1.42 - 0.08 * abs(i - 4) / 4
+            q.poly([(bx0, by0), (cx + 112 * ln * math.cos(t), hy + 97 * ln * math.sin(t)), (bx1, by1)], hc)
     elif hair == "afro":
         for i in range(11):
             a_ = math.pi * (0.9 + i * 1.2 / 10)
@@ -317,14 +323,14 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
         q.chord(cx, hy - 34, 232, 190, 180, 360, col if isinstance(col, tuple) else (200, 60, 60))
         q.rect(cx - 116, hy - 46, cx + 116, hy - 22, tuple(int(v * 0.8) for v in col), r=8)
         q.ell(cx, hy - 132, 36, 36, (240, 240, 240))
-    elif hair == "messy":  # jagged, uncombed tufts
-        q.chord(cx, hy - 24, 228, 160, 180, 360, hc)
-        for i in range(9):
-            x = cx - 112 + i * 28
-            q.poly([(x - 14, hy - 62 + abs(i - 4) * 6), (x + 6 + (i % 2) * 8, hy - 118 + abs(i - 4) * 9),
-                    (x + 18, hy - 62 + abs(i - 4) * 6)], hc)
-        q.poly([(cx - 116, hy - 30), (cx - 134, hy - 4), (cx - 104, hy - 14)], hc)
-        q.poly([(cx + 116, hy - 30), (cx + 136, hy - 2), (cx + 104, hy - 14)], hc)
+    elif hair == "messy":  # mop-top following the head, with a jagged fringe and a few stray tufts
+        pts = [(cx + 118 * math.cos(math.radians(t)), hy - 6 + 104 * math.sin(math.radians(t)))
+               for t in range(180, 361, 10)]
+        fr = []
+        for i in range(11):
+            x = cx + 114 - i * 22.8
+            fr.append((x, hy - 34 + (14 if i % 2 else 0)))
+        q.poly(pts + fr, hc)
     elif hair == "bob":  # straight bob framing the face
         q.chord(cx, hy - 16, 236, 176, 180, 360, hc)
         q.rect(cx - 120, hy - 20, cx - 92, hy + 50, hc, r=10)
@@ -464,57 +470,95 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
                             (max(0, (q.im.width - nw) // 2), 0))
         head = pad
     p.im.alpha_composite(head)
+    p.im.alpha_composite(front.im)
     im = p.done()
-    if hold:
-        im = add_hold(im, hold, TOP)
-    if flip:
+    if flip:  # flip the body first, then add props so their text never reads backwards
         im = im.transpose(Image.FLIP_LEFT_RIGHT)
+    sign = None
+    if hold:
+        hand = (300 - (br - 2) if flip else br - 2, TOP + 344, sk)
+        if detach_sign and hold_is_sign(hold):
+            # board drawn as its own layer above the crowd so nobody in front can hide it
+            sign = sign_layout(hold, TOP, flip, hand)
+            im = add_hold(im, None, TOP, mirror=flip, hand=hand)
+        else:
+            im = add_hold(im, hold, TOP, mirror=flip, hand=hand)
     s = scale * height
     if s != 1.0:
         im = im.resize((int(im.width * s), int(im.height * s)), Image.LANCZOS)
+        if sign:
+            b, bx, by = sign
+            sign = (b.resize((max(1, int(b.width * s)), max(1, int(b.height * s))), Image.LANCZOS), bx * s, by * s)
+    if sign:
+        im.info["sign_board"] = sign
     return im
 
 
 TOP = 80  # headroom above every character for tall hair and hats
 
 
-def add_hold(im, what, top=0):
-    """Put a prop in front of the character's hands."""
+def hold_is_sign(what):
+    return isinstance(what, tuple) and what and what[0] == "sign"
+
+
+def sign_layout(what, top, mirror, hand):
+    """Sign board image and its top-left position inside the holder's sprite."""
+    pr = sign_board(what[1], what[2] if len(what) > 2 else (255, 250, 230), size=40)
+    rx = 300 - hand[0] if mirror else hand[0]
+    x, y = rx - pr.width * 0.6, top + 40 - pr.height + 8
+    if mirror:
+        x = 300 - x - pr.width
+    return pr, x, y
+
+
+def add_hold(im, what, top=0, mirror=False, hand=None):
+    """Put a prop in the character's right hand (hand=(x, y, skin) in image pixels), then redraw the
+    hand over it so the fingers visibly grip it. mirror=True for flipped characters: positions are
+    mirrored but the prop itself is never mirrored, so its text stays readable."""
+    hx, hy_, sk = hand if hand else (210, top + 344, SKIN["light"])
+
+    def put(pr, x, y):  # x, y: prop top-left for an unflipped character
+        if mirror:
+            x = 300 - x - pr.width
+        im.alpha_composite(pr, (int(x), int(y)))
+
+    rx = 300 - hx if mirror else hx  # hand x as if unflipped
     if what == "phone":
         pr = phone(scale=0.32)
-        im.alpha_composite(pr, (150 - pr.width // 2 + 40, top + 250))
+        put(pr, rx - pr.width // 2, hy_ - pr.height + 18)
     elif what == "mic":
         p = Pen(80, 140)
         p.rect(34, 50, 46, 130, (60, 60, 60))
         p.ell(40, 40, 46, 56, (90, 90, 90))
         pr = p.done(shadow=False)
-        im.alpha_composite(pr, (180, top + 220))
+        put(pr, rx - 40, hy_ - 120)
     elif what == "briefcase":
         p = Pen(120, 100)
         p.rect(10, 25, 110, 95, (120, 70, 30), r=8)
         p.rect(40, 8, 80, 28, None)
         pr = p.done(shadow=False)
-        im.alpha_composite(pr, (175, top + 290))
+        put(pr, rx - 60, hy_ - 12)
     elif what == "cane":
         p = Pen(60, 200)
         p.line([(30, 30), (30, 195)], fill=(110, 70, 30), w=8)
         p.arc(16, 30, 30, 30, 180, 360, fill=(110, 70, 30), wd=8)
         pr = p.done(shadow=False)
-        im.alpha_composite(pr, (190, top + 220))
-    elif what == "magnifier":
-        p = Pen(140, 160)
-        p.line([(80, 80), (130, 150)], fill=(110, 70, 30), w=14)
-        p.ell(55, 55, 90, 90, (200, 235, 255), ow=6)
+        put(pr, rx - 30, hy_ - 30)
+    elif what == "magnifier":  # handle in the hand, glass held up and out to the side
+        p = Pen(110, 200)
+        p.line([(18, 188), (62, 92)], fill=(110, 70, 30), w=12)
+        p.ell(70, 62, 70, 70, (200, 235, 255), ow=6)
+        p.arc(62, 54, 40, 40, 200, 260, fill=(255, 255, 255), wd=5)
         pr = p.done(shadow=False)
-        im.alpha_composite(pr, (175, top + 160))
-    elif isinstance(what, tuple) and what[0] == "sign":
-        pr = sign_board(what[1], what[2] if len(what) > 2 else (255, 250, 230))
-        im.alpha_composite(pr, (150 - pr.width // 2, top + 40))
-        p = Pen(20, 200)
-        p.rect(5, 0, 15, 200, (140, 100, 60), ow=2)
-        st = p.done(shadow=False)
-        # stick behind sign? put in front of hands
-        im.alpha_composite(st, (140, top + 40 + pr.height - 10))
+        put(pr, rx - 18, hy_ - 188)
+    elif hold_is_sign(what):  # board above the head on the stick (stick is drawn in person())
+        pr, x, y = sign_layout(what, top, mirror, (hx, hy_, sk))
+        im.alpha_composite(pr, (int(x), int(y)))
+    if hand and what != "phone":
+        p = Pen(40, 40)
+        p.ell(20, 20, 30, 30, sk)
+        hd = p.done(shadow=False, paper=False)
+        im.alpha_composite(hd, (int(hx - 20), int(hy_ - 20)))
     return im
 
 
@@ -641,9 +685,10 @@ def char_set(name, scale=1.0, flip=False, mouth="closed", eyes="normal", **kw):
 
 
 @functools.lru_cache(None)
-def crowd_person(i, scale=0.6, mouth="closed", eyes="normal", hold=None, flip=False, arms="down"):
+def crowd_person(i, scale=0.6, mouth="closed", eyes="normal", hold=None, flip=False, arms="down",
+                 detach_sign=False):
     rng = random.Random(i * 7919)
-    return person(skin=rng.choice(CROWD_SKIN), hair=rng.choice(HAIRS), hat=rng.choice(HATS),
+    return person(detach_sign=detach_sign, skin=rng.choice(CROWD_SKIN), hair=rng.choice(HAIRS), hat=rng.choice(HATS),
                   hat_col=rng.choice(HAT_COLS), head="round", head_h=rng.choice([0.96, 1.0, 1.04]),
                   eye_s=rng.choice([0.95, 1.0, 1.0, 1.05]),
                   hair_col=rng.choice(CROWD_HAIR), outfit="shirt", col=rng.choice(CROWD_COLS),
@@ -864,7 +909,7 @@ def bubble(txt, size=46, tail="left", w_max=None):
     for i, l in enumerate(lines):
         p.text(cx, cy - th / 2 + lh * (i + 0.5), l, size, kind="hand")
     im = p.done()
-    im.info.update(kind="bubble", text=txt, tail=tail, ellipse=(cx, cy, w / 2 - 2, h / 2 - 2),
+    im.info.update(kind="bubble", text=txt, tail=tail, tip=(cx - s * w * 0.36, h + 72), ellipse=(cx, cy, w / 2 - 2, h / 2 - 2),
                    textbox=(cx - tw / 2, cy - th / 2, cx + tw / 2, cy + th / 2))
     return im
 
@@ -1298,7 +1343,10 @@ def _bg_base(sky, ground, horizon=780):
     return p
 
 
-HORIZON, ROAD_END = 800, 900  # street geometry: building bases / near kerb
+HORIZON, ROAD_END = 800, 900
+# parts of a background that captions must not cover (boxes in frame pixels)
+FLAG_BOX = (70, 60, 330, 216)
+BG_ZONES = {"chamber": [("flag", FLAG_BOX)], "senate": [("flag", FLAG_BOX)], "court": [("flag", FLAG_BOX)]}  # street geometry: building bases / near kerb
 STREETS = {"street", "night", "street_py", "washington", "wallst", "dusk", "sepia"}
 
 
@@ -1410,11 +1458,14 @@ def bg(kind):
             p.rect(i + 20, 60, i + 120, 640, tuple(min(255, c + 20) for c in wall), ow=2)
         p.rect(-5, 640, W + 5, H + 5, (110, 70, 45), ol=None)
         p.line([(-5, 640), (W + 5, 640)], w=4)
-        p.rect(W / 2 - 160, 90, W / 2 + 160, 280, (255, 255, 255), ow=4)
-        p.rect(W / 2 - 160, 90, W / 2 + 160, 153, (210, 40, 45), ol=None)
-        p.rect(W / 2 - 160, 217, W / 2 + 160, 280, (30, 60, 160), ol=None)
-        p.ell(W / 2, 185, 50, 50, (255, 255, 255), ol=(40, 120, 60), ow=3)
-        p.rect(W / 2 - 160, 90, W / 2 + 160, 280, None, ow=4)
+        fx0, fy0, fx1, fy1 = FLAG_BOX  # flag on a pole in the top-left corner, clear of titles
+        fh = (fy1 - fy0) / 3
+        p.rect(fx0 - 22, fy0 - 10, fx0 - 12, 640, (190, 160, 70))
+        p.rect(fx0, fy0, fx1, fy1, (255, 255, 255), ow=4)
+        p.rect(fx0, fy0, fx1, fy0 + fh, (210, 40, 45), ol=None)
+        p.rect(fx0, fy1 - fh, fx1, fy1, (30, 60, 160), ol=None)
+        p.ell((fx0 + fx1) / 2, (fy0 + fy1) / 2, 40, 40, (255, 255, 255), ol=(40, 120, 60), ow=3)
+        p.rect(fx0, fy0, fx1, fy1, None, ow=4)
         return paperize(p.done(shadow=False, paper=False).convert("RGB"), 0.12)
     if kind in ("office_in", "locker", "jail"):
         p = Pen(W, H)

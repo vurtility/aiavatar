@@ -13,6 +13,7 @@ Automated checks (every scene, sampled whenever a new element has fully appeared
   CLUTTER     more than MAX_TEXT text elements on screen at once
   BALANCE     the scene's visual weight sits far off-centre
   READING     a caption is on screen too briefly for its word count
+  BG-ZONE     a caption/bubble covering more than 15% of a key background element (e.g. the flag)
   GROUND      on street backgrounds, standing things must stand on the near pavement (y >= 890)
   DEPTH       a foreground building on a full street background (use the "<bg>_far" variant)
   TARGET      a stamp with no target or not landing on it; a bubble with no speaker, speaker not on
@@ -76,6 +77,9 @@ def frame_mask(p):
 
 
 def exempt(a, b):
+    if (a.kind == "bubble" and a.target and a.target == b.id) or \
+       (b.kind == "bubble" and b.target and b.target == a.id):
+        return True  # a bubble's tail may touch its own speaker
     kinds = {a.kind, b.kind}
     if kinds & {"scenery", "overlay"} and not kinds & set(TEXT):
         return True
@@ -204,8 +208,31 @@ def main():
                 if (sx < bx and tail != "left") or (sx > bx and tail != "right"):
                     add("ERROR", i, T, f"TARGET {desc(a)}: tail points {tail} but '{a.target}' is on the "
                                        f"{'left' if sx < bx else 'right'}")
-                if abs(sx - bx) > 950:
-                    add("WARN", i, T, f"TARGET {desc(a)} is far from its speaker '{a.target}'")
+                tip = next(iter(a.v.values())).info.get("tip")
+                if tip:
+                    tx, ty = pa["px"] + tip[0], pa["py"] + tip[1]
+                    x0, y0, x1, y1 = pt["box"]
+                    hb = (x0, y0, x1, y0 + (y1 - y0) * 0.45)  # speaker's head region
+                    dx = max(hb[0] - tx, 0, tx - hb[2])
+                    dy = max(hb[1] - ty, 0, ty - hb[3])
+                    dist = (dx * dx + dy * dy) ** 0.5
+                    if dist > 220:
+                        add("ERROR", i, T, f"TARGET {desc(a)}: tail tip is {dist:.0f}px from '{a.target}' "
+                                           f"(max 220) - move the bubble next to the speaker's head")
+        # captions must not bury key background elements
+        for zname, (zx0, zy0, zx1, zy1) in art.BG_ZONES.get(sc.bgk, []):
+            zarea = (zx1 - zx0) * (zy1 - zy0)
+            for a in sc.actors:
+                if a.kind not in TEXT:
+                    continue
+                t_in = a.t if a.t is not None else sc.start
+                p = placed(a, min(t_in + a.dur + 0.05, end - 0.06), sc.start)
+                if not p:
+                    continue
+                bx0, by0, bx1, by1 = p["box"]
+                ov = max(0, min(bx1, zx1) - max(bx0, zx0)) * max(0, min(by1, zy1) - max(by0, zy0))
+                if ov / zarea > 0.15:
+                    add("ERROR", i, t_in, f"BG-ZONE {desc(a)} covers {ov / zarea:.0%} of the {zname}")
         # ground: on streets, standing things stand on the near pavement
         if street:
             T = end - 0.06

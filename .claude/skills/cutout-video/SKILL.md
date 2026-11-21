@@ -69,6 +69,14 @@ blocked in cloud sessions.
   800–900, and people and props stand on the near pavement (y≈960; feet at y≥890). A scene whose subject
   is its own building uses the `<bg>_far` background (a hazy distant skyline), with that building
   placed at y=1000 on the pavement. Never put a foreground building in front of full-size street buildings.
+- **Speech bubbles:** always use `SAY(text, "<speaker id>", t=..., side="right"|"left")`. It places the
+  bubble beside the speaker's head with the tail pointing at it (the check fails if the tail tip is more
+  than 220px from the head). Keep name captions on the other side of the speaker.
+- **Background landmarks stay visible:** captions and bubbles may not cover more than 15% of a key
+  background element (`art.BG_ZONES`, e.g. the chamber flag, which now hangs top-left on a pole).
+- **Props are held:** held items sit in the hand and the hand is drawn over them. Raised arms draw in
+  front of the head, with the hands out wide. Crowd signs are drawn as their own layer above the whole
+  crowd and are never mirrored, so the text always reads correctly.
 - **Pointing things need targets:** give the thing an `id=` and give every stamp and speech bubble
   `target=<id>`. A stamp must land on its target, never on empty background. A bubble's `tail` must
   face its speaker. If a "stamp" is really a comment about something (e.g. "ALLEGATION – NOT

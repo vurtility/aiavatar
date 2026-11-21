@@ -30,6 +30,36 @@ class Actor:
 class Scene:
     def __init__(self, start, bgk, actors, zoom=0.035, part=None):
         self.start, self.bgk, self.actors, self.zoom, self.part = start, bgk, actors, zoom, part
+        ids = {a.id: a for a in actors if a.id}
+        for a in actors:
+            if getattr(a, "auto", None):
+                place_bubble(a, ids[a.target])
+
+
+def SAY(text, target, t=None, size=48, out=None, side="right", **kw):
+    """Speech bubble placed automatically beside the speaker's head (target = speaker id).
+    side: which side of the speaker the bubble sits on; the tail points back at the head."""
+    b = art.bubble(text, size, tail="left" if side == "right" else "right")
+    a = Actor(b, 0, 0, t=t, anchor="c", idle="none", out=out, target=target, **kw)
+    a.auto = side
+    return a
+
+
+def place_bubble(a, sp):
+    img = next(iter(sp.v.values()))
+    w, h = img.size
+    top = sp.y - h if sp.anchor == "bc" else sp.y - h / 2
+    head_top = top + (art.TOP * w / 312 if sp.kind == "char" else 0)  # skip the empty headroom
+    s = 1 if a.auto == "right" else -1
+    if sp.kind == "char":
+        tx, ty = sp.x + s * w * 0.3, head_top + (h - (head_top - top)) * 0.12
+    else:  # a screen/prop that "speaks": point at its upper side edge
+        tx, ty = sp.x + s * w * 0.46, top + h * 0.3
+    b = next(iter(a.v.values()))
+    tip = b.info["tip"]
+    x, y = tx - tip[0] + b.width / 2, ty - tip[1] + b.height / 2
+    a.x = min(max(x, b.width / 2 + 30), W - b.width / 2 - 30)
+    a.y = max(y, b.height / 2 + 20)
 
 
 def C(name, x, y=GROUND, t=None, talk=(), scale=1.15, flip=False, mouth="closed", eyes="normal", vary=None,
@@ -69,11 +99,20 @@ def crowd(x0, x1, y, n, scale=0.62, seed=0, t=None, hold=None, mouth="closed", e
             k = seed + r * 100 + i
             hd = hold[k % len(hold)] if isinstance(hold, list) else hold
             img = art.crowd_person(k, scale=scale * (1 - 0.12 * r), mouth=mouth, eyes=eyes, hold=hd,
-                                   flip=flipmix and (k % 3 == 0), arms=arms)
+                                   flip=flipmix and (k % 3 == 0), arms=arms, detach_sign=True)
             out.append(Actor(img, x, y - r * 60, t=None if t is None else t + 0.05 * i, phase=k * 0.37,
                              enter=enter, kind="char", name="crowd", ok="crowd"))
     out.sort(key=lambda a: -a.y)
-    return out[::-1]
+    out = out[::-1]
+    boards = []  # every sign board goes on top of the whole crowd, bobbing with its holder
+    for a in out:
+        img = a.v["closed"]
+        if "sign_board" in img.info:
+            b, bx, by = img.info["sign_board"]
+            boards.append(Actor(b, a.x - img.width / 2 + bx + b.width / 2, a.y - img.height + by + b.height / 2,
+                                t=a.t, anchor="c", enter=enter, idle="bob", phase=a.phase, kind="prop",
+                                name="sign", ok="crowd"))
+    return out + boards
 
 
 def gavel_actor(x, y, impact):
