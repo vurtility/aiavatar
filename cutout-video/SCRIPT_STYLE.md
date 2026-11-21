@@ -11,7 +11,7 @@ length and advertiser-safe tone.
 
 ## 1. What the reference scripts do (analysis of the five examples)
 
-Source: the "Webber script examples" doc (Trump and the populist right, why Trump got bad at politics,
+Source: scripts from Brendan Miller (youtube.com/@BrendanMillerExplains), shared in the "Webber script examples" doc (Trump and the populist right, why Trump got bad at politics,
 Dune and power, Farage and Count Binface, JD Vance's ideas). These are idea-led commentary videos, 12–25
 minutes long and about 2,000–3,700 words, told in the first person.
 
