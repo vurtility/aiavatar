@@ -540,7 +540,7 @@ def build():
     return S
 
 
-END = 663.0
+END = 680.6  # narration ends 660.1 + 20s end-screen hold
 # impacts for camera shake + matching sfx: (time, kind)
 SFX = [
     (5.14, "pop"), (5.92, "pop"), (6.18, "thud"), (7.05, "gavel"), (8.25, "thud"), (13.25, "thud"), (20.6, "pop"), (35.5, "crash"),
