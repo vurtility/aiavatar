@@ -115,37 +115,58 @@ def text_size(s, size, kind="title"):
 def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col=(45, 60, 110),
            tie=(190, 40, 40), mouth="closed", eyes="normal", sash=False, glasses=False, mustache=False,
            beard=False, hat=None, shirt=(240, 240, 240), pants=(50, 50, 60), arms="down", hold=None,
-           scale=1.0, flip=False, old=False, look=0):
+           scale=1.0, flip=False, old=False, look=0, build=1.0, height=1.0, head_w=1.0, brows=None,
+           pin=None, cross=False, jowls=False, tie_w=1.0):
+    """Cutout character.
+    build: body width (0.8 thin, 1.0 average, 1.2 stocky, 1.4 heavy - heavy also gets a belly)
+    height: overall size multiplier; head_w: head width multiplier
+    brows: None/'thick'/'grey'; pin: lapel pin ('us'/'py'); cross: pendant; jowls: rounder lower face
+    tie_w: tie width multiplier (Trump's tie is wide and extra long via outfit='longtie')"""
     w, h = 300, 430
     p = Pen(w, h)
     sk = SKIN.get(skin, skin) if isinstance(skin, str) else skin
     cx = 150
-    # legs + shoes
-    p.rect(118, 352, 146, 392, pants)
-    p.rect(154, 352, 182, 392, pants)
-    p.ell(126, 398, 52, 22, (30, 30, 30))
-    p.ell(174, 398, 52, 22, (30, 30, 30))
+    b = build
+    xl, xr = cx - 52 * b, cx + 52 * b          # shoulders
+    bl, br = cx - 62 * b, cx + 62 * b          # hem
+    # legs + shoes (heavier builds stand a little wider)
+    lg = 18 + 8 * (b - 1)
+    p.rect(cx - lg - 14, 352, cx - lg + 14, 392, pants)
+    p.rect(cx + lg - 14, 352, cx + lg + 14, 392, pants)
+    p.ell(cx - lg - 6, 398, 52, 22, (30, 30, 30))
+    p.ell(cx + lg + 6, 398, 52, 22, (30, 30, 30))
     # body
     if outfit == "dress":
-        p.poly([(110, 228), (190, 228), (215, 370), (85, 370)], col)
+        p.poly([(cx - 40 * b, 228), (cx + 40 * b, 228), (cx + 65 * b, 370), (cx - 65 * b, 370)], col)
     else:
-        p.poly([(98, 236), (202, 236), (212, 362), (88, 362)], col)
+        p.poly([(xl, 236), (xr, 236), (br, 362), (bl, 362)], col)
+        if b >= 1.25:  # belly
+            p.ell(cx, 318, 128 * b, 96 + 30 * (b - 1.25), col)
+            p.rect(bl + 3, 340, br - 3, 360, col, ol=None)
     if outfit == "suit":
         p.poly([(132, 236), (168, 236), (150, 300)], shirt)
-        p.poly([(144, 248), (156, 248), (160, 318), (150, 330), (140, 318)], tie, ow=2)
+        tw = 6 * tie_w
+        p.poly([(cx - tw, 248), (cx + tw, 248), (cx + tw + 4, 318), (cx, 330), (cx - tw - 4, 318)], tie, ow=2)
         p.line([(150, 300), (150, 360)], w=2)
         p.ell(150, 328, 7, 7, INK, ol=None)
     elif outfit == "longtie":
-        p.poly([(132, 236), (168, 236), (150, 300)], shirt)
-        p.poly([(143, 248), (157, 248), (162, 372), (150, 386), (138, 372)], tie, ow=2)
+        p.poly([(130, 236), (170, 236), (150, 300)], shirt)
+        tw = 9 * tie_w
+        p.poly([(cx - tw, 248), (cx + tw, 248), (cx + tw + 6, 392), (cx, 408), (cx - tw - 6, 392)], tie, ow=2)
+        p.poly([(cx - tw - 2, 244), (cx + tw + 2, 244), (cx + tw, 258), (cx - tw, 258)], tie, ow=2)  # knot
     elif outfit == "jersey":
-        for i, x in enumerate(range(100, 210, 22)):
+        x = xl + 2
+        i = 0
+        while x < xr - 4:
             if i % 2 == 0:
-                p.poly([(x, 238), (x + 11, 238), (x + 11, 360), (x, 360)], (255, 255, 255), ol=None)
-        p.poly([(98, 236), (202, 236), (212, 362), (88, 362)], None)
+                p.poly([(x, 238), (min(x + 11, xr), 238), (min(x + 11 + 10 * b, br), 360), (x + 10 * b - 10, 360)],
+                       (255, 255, 255), ol=None)
+            x += 22
+            i += 1
+        p.poly([(xl, 236), (xr, 236), (br, 362), (bl, 362)], None)
         p.text(150, 300, "ueno", 22, fill=(20, 140, 120), kind="title")
     elif outfit == "uniform":
-        p.ell(130, 270, 18, 18, (230, 200, 60))
+        p.ell(cx - 20 * b, 270, 18, 18, (230, 200, 60))
         p.line([(150, 240), (150, 360)], w=2)
         p.ell(150, 280, 6, 6, (230, 200, 60), ol=None)
         p.ell(150, 320, 6, 6, (230, 200, 60), ol=None)
@@ -153,116 +174,157 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
         p.poly([(132, 236), (168, 236), (150, 280)], shirt)
     elif outfit == "shirt":
         p.poly([(135, 236), (165, 236), (150, 262)], tuple(min(255, c + 40) for c in col))
+    if pin == "us":
+        p.rect(xl + 16, 262, xl + 34, 274, (200, 40, 50), ow=1)
+        p.rect(xl + 16, 262, xl + 24, 268, (40, 60, 140), ol=None)
+    elif pin == "py":
+        p.ell(xl + 26, 268, 14, 14, (210, 40, 45), ow=1)
+    if cross:
+        p.line([(140, 238), (150, 280), (160, 238)], fill=(200, 170, 60), w=2)
+        p.rect(147, 280, 153, 304, (200, 170, 60), ol=None)
+        p.rect(141, 286, 159, 292, (200, 170, 60), ol=None)
     if sash:
-        p.poly([(98, 250), (118, 236), (206, 340), (190, 356)], (210, 40, 45), ow=2)
-        p.poly([(104, 258), (114, 250), (199, 347), (193, 352)], (255, 255, 255), ol=None)
-        p.ell(196, 352, 20, 20, (235, 200, 60), ow=2)
+        p.poly([(xl, 250), (xl + 20, 236), (br - 6, 340), (br - 22, 356)], (210, 40, 45), ow=2)
+        p.poly([(xl + 6, 258), (xl + 16, 250), (br - 13, 347), (br - 19, 352)], (255, 255, 255), ol=None)
+        p.ell(br - 16, 352, 20, 20, (235, 200, 60), ow=2)
     # arms + mitten hands
     if arms == "up":
-        p.poly([(98, 244), (112, 252), (88, 180), (72, 186)], col)
-        p.poly([(202, 244), (188, 252), (212, 180), (228, 186)], col)
-        p.ell(78, 172, 30, 30, sk)
-        p.ell(222, 172, 30, 30, sk)
+        p.poly([(xl, 244), (xl + 14, 252), (xl - 10, 180), (xl - 26, 186)], col)
+        p.poly([(xr, 244), (xr - 14, 252), (xr + 10, 180), (xr + 26, 186)], col)
+        p.ell(xl - 20, 172, 30, 30, sk)
+        p.ell(xr + 20, 172, 30, 30, sk)
     elif arms == "point":
-        p.poly([(98, 244), (110, 252), (100, 340), (84, 336)], col)
-        p.ell(90, 344, 30, 30, sk)
-        p.poly([(202, 244), (196, 262), (282, 236), (282, 222)], col)
+        p.poly([(xl, 244), (xl + 12, 252), (bl + 12, 340), (bl - 4, 336)], col)
+        p.ell(bl + 2, 344, 30, 30, sk)
+        p.poly([(xr, 244), (xr - 6, 262), (282, 236), (282, 222)], col)
         p.ell(288, 228, 30, 30, sk)
     elif arms == "hold":
-        p.poly([(98, 244), (112, 252), (128, 310), (112, 318)], col)
-        p.poly([(202, 244), (188, 252), (172, 310), (188, 318)], col)
+        p.poly([(xl, 244), (xl + 14, 252), (128, 310), (112, 318)], col)
+        p.poly([(xr, 244), (xr - 14, 252), (172, 310), (188, 318)], col)
     else:
-        p.poly([(98, 244), (110, 252), (100, 340), (84, 336)], col)
-        p.poly([(202, 244), (190, 252), (200, 340), (216, 336)], col)
-        p.ell(90, 344, 30, 30, sk)
-        p.ell(210, 344, 30, 30, sk)
-    # head
+        p.poly([(xl, 244), (xl + 12, 252), (bl + 12, 340), (bl - 4, 336)], col)
+        p.poly([(xr, 244), (xr - 12, 252), (br - 12, 340), (br + 4, 336)], col)
+        p.ell(bl + 2, 344, 30, 30, sk)
+        p.ell(br - 2, 344, 30, 30, sk)
+    # ---- head on its own layer so it can be widened/narrowed per person
+    q = Pen(w, h)
     hy = 138
     if hair in ("long", "bun"):
-        p.ell(cx, hy + 10, 236, 210, hair_col)
-    p.ell(cx, hy, 226, 196, sk)
+        q.ell(cx, hy + 10, 236, 210, hair_col)
+    q.ell(cx, hy, 226, 196, sk)
+    if jowls:
+        q.chord(cx, hy + 34, 214, 150, 0, 180, sk, ol=None)
+        q.arc(cx, hy + 34, 214, 150, 20, 160, wd=OUT)
+        q.arc(cx - 64, hy + 62, 40, 30, 300, 40, fill=(170, 110, 80), wd=2)
+        q.arc(cx + 64, hy + 62, 40, 30, 140, 240, fill=(170, 110, 80), wd=2)
     if old:
-        p.arc(cx - 70, hy + 40, 30, 20, 200, 340, fill=(150, 100, 80), wd=2)
-        p.arc(cx + 70, hy + 40, 30, 20, 200, 340, fill=(150, 100, 80), wd=2)
-    # hair
+        q.arc(cx - 70, hy + 40, 30, 20, 200, 340, fill=(150, 100, 80), wd=2)
+        q.arc(cx + 70, hy + 40, 30, 20, 200, 340, fill=(150, 100, 80), wd=2)
     hc = hair_col
     if hair == "short":
-        p.chord(cx, hy - 20, 228, 170, 180, 360, hc)
-        p.poly([(cx - 110, hy - 20), (cx - 60, hy - 40), (cx - 100, hy + 10)], hc, ol=None)
-    elif hair == "swoop":
-        p.chord(cx, hy - 26, 232, 160, 180, 360, hc)
-        p.poly([(cx - 118, hy - 30), (cx + 40, hy - 70), (cx + 125, hy - 34), (cx + 40, hy - 18),
-                (cx - 60, hy - 6)], hc)
+        q.chord(cx, hy - 20, 228, 170, 180, 360, hc)
+        q.poly([(cx - 110, hy - 20), (cx - 60, hy - 40), (cx - 100, hy + 10)], hc, ol=None)
+    elif hair == "swoop":  # big blond comb-over that sweeps forward and up
+        q.chord(cx, hy - 26, 236, 166, 180, 360, hc)
+        q.poly([(cx - 122, hy - 26), (cx - 40, hy - 96), (cx + 70, hy - 104), (cx + 132, hy - 60),
+                (cx + 120, hy - 24), (cx + 40, hy - 40), (cx - 50, hy - 4)], hc)
+        q.line([(cx - 60, hy - 60), (cx + 80, hy - 78)], fill=tuple(max(0, c - 40) for c in hc), w=3)
+        q.line([(cx - 40, hy - 40), (cx + 90, hy - 56)], fill=tuple(max(0, c - 40) for c in hc), w=3)
     elif hair == "bald":
-        p.chord(cx - 98, hy + 6, 40, 80, 90, 270, hc)
-        p.chord(cx + 98, hy + 6, 40, 80, 270, 90, hc)
+        q.chord(cx - 98, hy + 6, 40, 80, 90, 270, hc)
+        q.chord(cx + 98, hy + 6, 40, 80, 270, 90, hc)
     elif hair == "side":
-        p.chord(cx, hy - 24, 226, 150, 180, 360, hc)
-        p.line([(cx - 40, hy - 96), (cx - 30, hy - 40)], fill=sk, w=4)
+        q.chord(cx, hy - 24, 226, 150, 180, 360, hc)
+        q.line([(cx - 40, hy - 96), (cx - 30, hy - 40)], fill=sk, w=4)
+    elif hair == "slick":  # short, neat, swept back
+        q.chord(cx, hy - 30, 222, 140, 180, 360, hc)
+        q.line([(cx - 70, hy - 84), (cx + 60, hy - 90)], fill=tuple(min(255, c + 50) for c in hc), w=3)
     elif hair == "bun":
-        p.chord(cx, hy - 20, 228, 160, 180, 360, hc)
-        p.ell(cx, hy - 110, 70, 56, hc)
+        q.chord(cx, hy - 20, 228, 160, 180, 360, hc)
+        q.ell(cx, hy - 110, 70, 56, hc)
     elif hair == "long":
-        p.chord(cx, hy - 20, 228, 160, 180, 360, hc)
+        q.chord(cx, hy - 20, 228, 160, 180, 360, hc)
     elif hair == "curly":
         for i in range(9):
             a = math.pi + i * math.pi / 8
-            p.ell(cx + 100 * math.cos(a), hy - 10 + 85 * math.sin(a), 56, 56, hc)
+            q.ell(cx + 100 * math.cos(a), hy - 10 + 85 * math.sin(a), 56, 56, hc)
     # eyes
     ex, ey = 26, hy - 18
     if eyes == "blink":
-        p.line([(cx - ex - 24, ey), (cx - ex + 24, ey)], w=4)
-        p.line([(cx + ex - 24, ey), (cx + ex + 24, ey)], w=4)
+        q.line([(cx - ex - 24, ey), (cx - ex + 24, ey)], w=4)
+        q.line([(cx + ex - 24, ey), (cx + ex + 24, ey)], w=4)
+    elif eyes == "squint":
+        q.ell(cx - ex, ey + 6, 54, 34, (255, 255, 255), ow=2)
+        q.ell(cx + ex, ey + 6, 54, 34, (255, 255, 255), ow=2)
+        q.ell(cx - ex + 6, ey + 8, 9, 9, INK, ol=None)
+        q.ell(cx + ex - 6, ey + 8, 9, 9, INK, ol=None)
+        q.line([(cx - ex - 26, ey - 8), (cx - ex + 24, ey - 12)], w=5)
+        q.line([(cx + ex + 26, ey - 8), (cx + ex - 24, ey - 12)], w=5)
     else:
-        p.ell(cx - ex, ey, 54, 62, (255, 255, 255), ow=2)
-        p.ell(cx + ex, ey, 54, 62, (255, 255, 255), ow=2)
-        px = 6 + look
-        p.ell(cx - ex + px, ey + 4, 9, 9, INK, ol=None)
-        p.ell(cx + ex - 6 + look + (6 if look else 0), ey + 4, 9, 9, INK, ol=None)
+        q.ell(cx - ex, ey, 54, 62, (255, 255, 255), ow=2)
+        q.ell(cx + ex, ey, 54, 62, (255, 255, 255), ow=2)
+        q.ell(cx - ex + 6 + look, ey + 4, 9, 9, INK, ol=None)
+        q.ell(cx + ex - 6 + look + (6 if look else 0), ey + 4, 9, 9, INK, ol=None)
         if eyes == "angry":
-            p.line([(cx - ex - 28, ey - 34), (cx - 4, ey - 18)], w=5)
-            p.line([(cx + ex + 28, ey - 34), (cx + 4, ey - 18)], w=5)
+            q.line([(cx - ex - 28, ey - 34), (cx - 4, ey - 18)], w=5)
+            q.line([(cx + ex + 28, ey - 34), (cx + 4, ey - 18)], w=5)
         elif eyes == "worried":
-            p.line([(cx - ex - 26, ey - 22), (cx - 6, ey - 36)], w=5)
-            p.line([(cx + ex + 26, ey - 22), (cx + 6, ey - 36)], w=5)
+            q.line([(cx - ex - 26, ey - 22), (cx - 6, ey - 36)], w=5)
+            q.line([(cx + ex + 26, ey - 22), (cx + 6, ey - 36)], w=5)
+    if brows and eyes not in ("angry", "worried", "squint"):
+        bc = (150, 150, 150) if brows == "grey" else hc
+        q.poly([(cx - ex - 26, ey - 36), (cx - 6, ey - 40), (cx - 6, ey - 32), (cx - ex - 26, ey - 28)], bc, ow=1)
+        q.poly([(cx + ex + 26, ey - 36), (cx + 6, ey - 40), (cx + 6, ey - 32), (cx + ex + 26, ey - 28)], bc, ow=1)
     if glasses:
-        p.arc(cx - ex, ey, 64, 70, 0, 360, wd=3)
-        p.arc(cx + ex, ey, 64, 70, 0, 360, wd=3)
-    # mouth
+        q.arc(cx - ex, ey, 64, 70, 0, 360, wd=3)
+        q.arc(cx + ex, ey, 64, 70, 0, 360, wd=3)
     my = hy + 54
     if beard:
-        p.chord(cx, hy + 40, 170, 140, 0, 180, hair_col if hair_col != (0, 0, 0) else (60, 40, 30), ol=None)
+        q.chord(cx, hy + 40, 170, 140, 0, 180, hair_col if hair_col != (0, 0, 0) else (60, 40, 30), ol=None)
     if mustache:
-        p.ell(cx - 16, my - 14, 40, 16, hair_col, ol=None)
-        p.ell(cx + 16, my - 14, 40, 16, hair_col, ol=None)
+        mc = mustache if isinstance(mustache, tuple) else hair_col
+        q.ell(cx - 16, my - 14, 40, 16, mc, ol=None)
+        q.ell(cx + 16, my - 14, 40, 16, mc, ol=None)
     if mouth == "open":
-        p.chord(cx, my - 6, 44, 40, 0, 180, (110, 20, 30), ow=2)
+        q.chord(cx, my - 6, 44, 40, 0, 180, (110, 20, 30), ow=2)
     elif mouth == "shout":
-        p.ell(cx, my, 50, 46, (110, 20, 30), ow=2)
+        q.ell(cx, my, 50, 46, (110, 20, 30), ow=2)
     elif mouth == "smile":
-        p.arc(cx, my - 10, 46, 26, 20, 160, wd=3)
+        q.arc(cx, my - 10, 46, 26, 20, 160, wd=3)
     elif mouth == "frown":
-        p.arc(cx, my + 6, 40, 22, 200, 340, wd=3)
+        q.arc(cx, my + 6, 40, 22, 200, 340, wd=3)
+    elif mouth == "pout":  # pursed "O"
+        q.ell(cx, my - 2, 22, 18, (150, 50, 60), ow=2)
     else:
-        p.line([(cx - 12, my), (cx + 12, my)], w=3)
-    # hats
+        q.line([(cx - 12, my), (cx + 12, my)], w=3)
     if hat == "police":
-        p.chord(cx, hy - 66, 200, 110, 180, 360, (30, 45, 90))
-        p.rect(cx - 104, hy - 70, cx + 104, hy - 56, (20, 20, 25))
-        p.ell(cx, hy - 92, 22, 22, (230, 200, 60))
+        q.chord(cx, hy - 66, 200, 110, 180, 360, (30, 45, 90))
+        q.rect(cx - 104, hy - 70, cx + 104, hy - 56, (20, 20, 25))
+        q.ell(cx, hy - 92, 22, 22, (230, 200, 60))
     elif hat == "cap":
-        p.chord(cx, hy - 60, 200, 120, 180, 360, col)
-        p.poly([(cx + 40, hy - 64), (cx + 140, hy - 60), (cx + 120, hy - 50), (cx + 40, hy - 52)], col)
+        q.chord(cx, hy - 60, 200, 120, 180, 360, col)
+        q.poly([(cx + 40, hy - 64), (cx + 140, hy - 60), (cx + 120, hy - 50), (cx + 40, hy - 52)], col)
     elif hat == "helmet":
-        p.chord(cx, hy - 50, 220, 150, 180, 360, (40, 50, 70))
-        p.rect(cx - 70, hy - 66, cx + 70, hy - 30, (150, 200, 230), ow=2)
+        q.chord(cx, hy - 50, 220, 150, 180, 360, (40, 50, 70))
+        q.rect(cx - 70, hy - 66, cx + 70, hy - 30, (150, 200, 230), ow=2)
+    head = q.im
+    if abs(head_w - 1) > 1e-3:
+        nw = int(head.width * head_w)
+        head = head.resize((nw, head.height), Image.LANCZOS)
+        pad = Image.new("RGBA", q.im.size, (0, 0, 0, 0))
+        pad.alpha_composite(head.crop((max(0, (nw - q.im.width) // 2), 0,
+                                       max(0, (nw - q.im.width) // 2) + min(nw, q.im.width), head.height)),
+                            (max(0, (q.im.width - nw) // 2), 0))
+        head = pad
+    p.im.alpha_composite(head)
     im = p.done()
     if hold:
         im = add_hold(im, hold)
     if flip:
         im = im.transpose(Image.FLIP_LEFT_RIGHT)
-    if scale != 1.0:
-        im = im.resize((int(im.width * scale), int(im.height * scale)), Image.LANCZOS)
+    s = scale * height
+    if s != 1.0:
+        im = im.resize((int(im.width * s), int(im.height * s)), Image.LANCZOS)
     return im
 
 
@@ -319,49 +381,60 @@ def sign_board(txt, col=(255, 250, 230), size=34):
 
 # named characters --------------------------------------------------------------------
 
+# Recognisable traits are drawn from each real person's public appearance (build, hair, signature
+# clothing). Keep them as gentle caricature: exaggerate what people recognise, never mock.
 CAST = {
     "dom": dict(skin="light", hair="short", hair_col=(95, 60, 35), outfit="shirt", col=(60, 120, 190)),
+    # Santiago Pena: 47, solid build, round face, short dark side-parted hair, presidential sash
     "pena": dict(skin="tan", hair="side", hair_col=(35, 28, 25), outfit="suit", col=(35, 45, 80),
-                 tie=(40, 70, 160), sash=True),
+                 tie=(40, 70, 160), sash=True, build=1.15, head_w=1.06, pin="py"),
     "pena_nosash": dict(skin="tan", hair="side", hair_col=(35, 28, 25), outfit="suit", col=(35, 45, 80),
-                        tie=(40, 70, 160)),
-    "trump": dict(skin="orange", hair="swoop", hair_col=(240, 210, 120), outfit="longtie", col=(30, 40, 75),
-                  tie=(210, 30, 40)),
-    "cartes": dict(skin="light", hair="bald", hair_col=(185, 185, 185), outfit="suit", col=(70, 70, 75),
-                   tie=(200, 40, 40), old=True),
+                        tie=(40, 70, 160), build=1.15, head_w=1.06),
+    # Trump: big frame, blond swept comb-over, orange tan, long wide red tie, flag pin, pursed mouth
+    "trump": dict(skin="orange", hair="swoop", hair_col=(242, 206, 110), outfit="longtie", col=(28, 36, 70),
+                  tie=(215, 25, 35), tie_w=1.5, build=1.42, height=1.08, head_w=1.1, jowls=True,
+                  pin="us", brows="thick", rest="pout"),
+    # Horacio Cartes: older, heavy-set, bald with grey sides, businessman's grey suit
+    "cartes": dict(skin="light", hair="bald", hair_col=(190, 190, 190), outfit="suit", col=(80, 80, 85),
+                   tie=(200, 40, 40), old=True, build=1.38, head_w=1.08, jowls=True, brows="grey"),
+    # Marco Rubio: slim, youthful, short dark hair, thick dark eyebrows
     "rubio": dict(skin="tan", hair="short", hair_col=(40, 30, 25), outfit="suit", col=(40, 45, 60),
-                  tie=(60, 90, 170)),
-    "bessent": dict(skin="light", hair="side", hair_col=(215, 215, 215), outfit="suit", col=(40, 45, 60),
-                    tie=(140, 40, 60)),
+                  tie=(60, 90, 170), build=0.92, brows="thick", pin="us"),
+    # Scott Bessent: tall and lean, neat silver hair swept back
+    "bessent": dict(skin="light", hair="slick", hair_col=(205, 205, 210), outfit="suit", col=(40, 45, 60),
+                    tie=(140, 40, 60), build=0.85, height=1.06, head_w=0.94, pin="us"),
     "cbchief": dict(skin="light", hair="side", hair_col=(120, 120, 120), outfit="suit", col=(90, 95, 105),
-                    tie=(40, 120, 90), glasses=True),
+                    tie=(40, 120, 90), glasses=True, build=0.95),
     "newchief": dict(skin="tan", hair="short", hair_col=(50, 40, 30), outfit="suit", col=(70, 60, 90),
-                     tie=(200, 160, 40)),
+                     tie=(200, 160, 40), build=1.1),
     "regulator": dict(skin="brown", hair="short", hair_col=(30, 25, 20), outfit="suit", col=(80, 80, 90),
-                      tie=(90, 60, 160), glasses=True),
+                      tie=(90, 60, 160), glasses=True, build=0.9),
     "finchief": dict(skin="tan", hair="bun", hair_col=(60, 35, 25), outfit="dress", col=(150, 50, 90),
-                     glasses=True),
+                     glasses=True, build=0.95),
     "senator": dict(skin="brown", hair="curly", hair_col=(30, 25, 20), outfit="suit", col=(110, 40, 40),
-                    tie=(240, 200, 60), mustache=True),
-    "exec": dict(skin="light", hair="side", hair_col=(40, 30, 25), outfit="suit", col=(25, 25, 30),
-                 tie=(20, 140, 120)),
+                    tie=(240, 200, 60), mustache=True, build=1.2),
+    "exec": dict(skin="light", hair="slick", hair_col=(40, 30, 25), outfit="suit", col=(25, 25, 30),
+                 tie=(20, 140, 120), build=1.05),
     "lawyer": dict(skin="brown", hair="short", hair_col=(25, 20, 15), outfit="suit", col=(60, 50, 40),
-                   tie=(120, 30, 30), glasses=True),
+                   tie=(120, 30, 30), glasses=True, build=0.9),
+    # Pedro Alliana: heavier build, dark hair, thick moustache
     "alliana": dict(skin="tan", hair="short", hair_col=(30, 25, 20), outfit="suit", col=(50, 70, 50),
-                    tie=(200, 40, 40), mustache=True),
-    "lugo": dict(skin="tan", hair="bald", hair_col=(220, 220, 220), outfit="shirt", col=(150, 130, 100),
-                 beard=True),
+                    tie=(200, 40, 40), mustache=True, build=1.3, head_w=1.05, brows="thick"),
+    # Fernando Lugo: former Catholic bishop - lean, white beard, bald crown, open shirt, small cross
+    "lugo": dict(skin="tan", hair="bald", hair_col=(225, 225, 225), outfit="shirt", col=(150, 130, 100),
+                 beard=True, cross=True, build=0.88),
     "cop": dict(skin="tan", hair="short", outfit="uniform", col=(40, 60, 110), hat="police",
-                pants=(30, 40, 80)),
+                pants=(30, 40, 80), build=1.1),
     "riot": dict(skin="tan", hair="short", outfit="uniform", col=(35, 40, 55), hat="helmet",
-                 pants=(30, 30, 40)),
-    "player": dict(skin="tan", hair="short", outfit="jersey", col=(210, 35, 45), pants=(40, 60, 160)),
+                 pants=(30, 30, 40), build=1.2),
+    "player": dict(skin="tan", hair="short", outfit="jersey", col=(210, 35, 45), pants=(40, 60, 160),
+                   build=0.95, height=1.04),
     "reporter": dict(skin="light", hair="long", hair_col=(170, 110, 50), outfit="shirt", col=(80, 150, 90),
-                     hold="mic"),
+                     hold="mic", build=0.9),
     "pensioner": dict(skin="light", hair="bald", hair_col=(225, 225, 225), outfit="shirt", col=(150, 120, 90),
-                      old=True, glasses=True, hold="cane"),
+                      old=True, glasses=True, hold="cane", build=0.9, height=0.95),
     "granny": dict(skin="tan", hair="bun", hair_col=(220, 220, 220), outfit="dress", col=(120, 90, 160),
-                   old=True, glasses=True),
+                   old=True, glasses=True, build=1.05, height=0.92),
 }
 
 CROWD_COLS = [(220, 90, 60), (70, 150, 200), (240, 190, 60), (110, 180, 90), (170, 90, 170), (230, 120, 160),
@@ -373,6 +446,9 @@ CROWD_SKIN = ["light", "tan", "brown", "pale", "tan"]
 @functools.lru_cache(None)
 def char(name, mouth="closed", eyes="normal", flip=False, scale=1.0, **kw):
     d = dict(CAST[name])
+    rest = d.pop("rest", "closed")  # the person's signature resting expression
+    if mouth == "closed":
+        mouth = rest
     d.update(kw)
     d.update(mouth=mouth, eyes=eyes, flip=flip, scale=scale)
     return person(**d)
@@ -396,7 +472,9 @@ def crowd_person(i, scale=0.6, mouth="closed", eyes="normal", hold=None, flip=Fa
     return person(skin=rng.choice(CROWD_SKIN), hair=rng.choice(["short", "long", "curly", "side", "bun", "bald"]),
                   hair_col=rng.choice(CROWD_HAIR), outfit="shirt", col=rng.choice(CROWD_COLS),
                   mouth=mouth, eyes=eyes, scale=scale, hold=hold, flip=flip, arms=arms,
-                  glasses=rng.random() < 0.2, pants=rng.choice([(50, 50, 60), (40, 60, 120), (90, 70, 50)]))
+                  glasses=rng.random() < 0.2, pants=rng.choice([(50, 50, 60), (40, 60, 120), (90, 70, 50)]),
+                  build=rng.choice([0.85, 0.95, 1.0, 1.1, 1.25, 1.4]), height=rng.choice([0.92, 1.0, 1.0, 1.06]),
+                  head_w=rng.choice([0.96, 1.0, 1.04]))
 
 
 # ----------------------------------------------------------------------------- props

@@ -47,6 +47,14 @@ blocked in cloud sessions.
   for a caption label, `P` for a prop or bubble, plus `crowd`, `gavel_actor` and `part_card`. Time every
   element to the word it illustrates. Put `SFX`, `WHOOSH`, `SHAKE` and `END` at the bottom.
 - Add new characters to `art.CAST` and new props to `art.py`. Stay in the house style (below).
+- **Real people must be recognisable.** Before you add a real person, look up their public appearance
+  and give them their distinguishing traits through `person()` options: `build` (0.85 thin to 1.42 heavy,
+  where 1.25 and up adds a belly), `height`, `head_w`, `hair` (short/side/slick/swoop/bald/curly/bun/long),
+  hair colour, `brows`, `mustache`, `beard`, `glasses`, `jowls`, `old`, skin tone, suit and tie colours,
+  `tie_w` and `outfit="longtie"` (a long tie), `pin` (a flag pin), `sash`, `cross`, and `rest` (their
+  signature resting expression, e.g. Trump's `"pout"`). Exaggerate what viewers know them for, like a
+  gentle caricature, and never mock. Write a one-line comment above each entry saying which traits it
+  shows. Generic characters and crowds get a varied mix of builds and heights.
 
 ## 6. Visual check loop (repeat until clean)
 1. `EPISODE=episodes/<slug>.py WORKDIR=WORKDIR python3 check.py --sheets`
@@ -62,10 +70,33 @@ blocked in cloud sessions.
    - allegations are labelled as allegations
 4. Re-run until there are 0 errors and every warning remaining is deliberate.
 
-## 7. Render and deliver
+## 7. Thumbnails (3 per video, for A/B testing)
+- Define `thumbnails()` in the episode file using the helpers in `thumbnails.py`, then run
+  `EPISODE=episodes/<slug>.py python3 thumbnails.py WORKDIR/thumbs`. This writes 1280x720 JPEGs.
+- Each of the three tests a different hook: **A** a face reacting, **B** the stakes or a number, **C** the
+  conflict or power angle. Use 3–5 huge words with a thick outline and one or two big recognisable
+  characters. Text must be solid, never the rough stamp texture, which can't be read on a phone.
+  Every claim shown must be true in the video.
+- Look at all three at 640px wide (roughly phone size) before you keep them.
+
+## 8. Render and deliver
 - `./make_video.sh episodes/<slug>.py narration.mp3 output/<slug>.mp4 WORKDIR` (about 10 min for 11 min of video
   on 4 cores). Then pull 4–6 frames at hero moments (gavel hits, quotes) with ffmpeg and look at them.
 - Send the MP4 with SendUserFile. Commit the episode, the script and lexicon changes, but not the MP4.
+
+## 9. Google Drive archive
+- Drive folder **Dom Talks Politics** (id `1MxKOp5yLcuQvgBJgQmNYlGIofpFuE41R`) holds one subfolder per
+  episode, named `YYYY-MM <Title>`. Create it with the Drive connector (`create_file` with the
+  folder mime type and that parentId).
+- Upload with `create_file`, using `base64Content` set to a file reference
+  (`sha256:<hash>:<absolute path>`) and `disableConversionToGoogleType: true`. Upload: script.txt, the 3
+  thumbnails, pronunciation_sheet.md, pronunciation_check.md and visual_report.md.
+- **The connector rejects files over 10 MB**, which rules out the MP4 and usually the narration MP3.
+  Until there's a large-file route, deliver those with SendUserFile and note in the folder that
+  they're held elsewhere.
+
+## 10. YouTube upload
+_Not set up yet. It needs YouTube Data API access to the channel (OAuth)._
 
 ## House visual style
 - Construction-paper cutout look: flat colours, thin dark outlines, paper grain, soft drop shadows.

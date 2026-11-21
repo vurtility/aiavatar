@@ -542,3 +542,32 @@ SFX = [
 ]
 WHOOSH = [39.0, 95.9, 144.9, 209.7, 273.2, 333.3, 393.3, 447.6, 498.2, 549.4]
 SHAKE = {t: (14 if k == "gavel" else 8) for t, k in SFX if k in ("gavel", "stamp", "thud", "crash", "glass", "crack")}
+
+
+def thumbnails():
+    import thumbnails as th
+    out = []
+    # A - the face: shocked president, bank crumbling, the core hook
+    im = th.canvas(col=(214, 52, 48, 255), rays=(1350, 600, (236, 84, 64, 255)))
+    th.put(im, art.building("bank", 760, 600, label="ueno"), 1460, 1130, rot=-8)
+    th.put(im, art.char("pena", mouth="shout", eyes="worried", arms="up"), 520, 1180, scale=2.1)
+    th.big_text(im, ["ONE BANK", ("TOOK DOWN", (255, 225, 80)), "A PRESIDENT"], 1340, 330, size=150, rot=-3)
+    out.append(("A_face", im))
+    # B - the stakes: 3 million people's money frozen
+    im = th.canvas(col=(40, 110, 190, 255), rays=(960, 640, (60, 135, 215, 255)))
+    th.put(im, art.vault(520, 520), 1380, 1020)
+    th.put(im, art.ice_block(700, 660), 1380, 1080)
+    for i, x in enumerate((140, 360, 580)):
+        th.put(im, art.crowd_person(120 + i, scale=1.25, mouth="shout", eyes="angry"), x, 1150)
+    th.big_text(im, [("3 MILLION", (255, 225, 80)), "LOCKED OUT"], 640, 250, size=170, rot=-4)
+    th.big_text(im, ["FROZEN!"], 1380, 470, size=130, fill=(190, 235, 255), rot=6)
+    out.append(("B_stakes", im))
+    # C - the power angle: Trump's ally, impeached
+    im = th.canvas(bgk="washington")
+    th.put(im, art.building("capitol", 900, 420), 960, 800, scale=1.2)
+    th.put(im, art.char("trump", mouth="open", eyes="worried", flip=True), 1560, 1150, scale=1.9)
+    th.put(im, art.char("pena", mouth="frown", eyes="worried"), 560, 1150, scale=1.9)
+    th.big_text(im, [("IMPEACHED", (235, 45, 45))], 600, 900, size=120, rot=-12, stroke=12)
+    th.big_text(im, ["TRUMP'S MAN", ("IN PARAGUAY", (255, 225, 80))], 960, 190, size=140, rot=-2)
+    out.append(("C_power", im))
+    return out
