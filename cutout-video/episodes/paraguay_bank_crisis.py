@@ -22,21 +22,21 @@ def build():
     ]))
     # --- cold open
     S.append(Scene(7.75, "street", [
-        P(art.vault(380, 380), 560, 900, t=7.5),
-        P(art.ice_block(500, 460), 560, 940, t=8.2, enter="drop"),
+        P(art.vault(380, 380), 560, 1000, t=7.5),
+        P(art.ice_block(500, 460), 560, 1040, t=8.2, enter="drop"),
         L("FROZEN!", 560, 360, t=8.4, size=90, rot=-6, bgc=(200, 235, 255)),
-        *crowd(930, 1500, GROUND, 5, scale=0.62, t=9.0, eyes="worried", mouth="frown"),
-        L("3 MILLION PEOPLE", 1250, 300, t=10.0, size=70, rot=2),
-        C("pena", 1720, GROUND, t=12.0, scale=0.95, eyes="worried",
+        *crowd(800, 1100, GROUND, 5, scale=0.62, t=9.0, eyes="worried", mouth="frown"),
+        L("3 MILLION PEOPLE", 1080, 240, t=10.0, size=70, rot=2),
+        C("pena", 1380, GROUND, t=12.0, scale=0.95, eyes="worried",
           a={"fall": 13.0, "idle": "none"}),
-        L("...AND A PRESIDENT", 1600, 470, t=12.6, size=52, rot=-3, bgc=(255, 140, 120)),
+        L("...AND A PRESIDENT", 1650, 330, t=12.6, size=52, rot=-3, bgc=(255, 140, 120)),
     ]))
-    S.append(Scene(14.4, "street", [
+    S.append(Scene(14.4, "street_far", [
         P(art.tv(art.char("pena", mouth="closed")), 620, 560, t=14.5, anchor="c"),
         L("PRESIDENT PEÑA RESIGNS\n(BY VIDEO)", 620, 160, t=15.5, size=58, rot=-2),
-        P(art.building("congress", 620, 480, label="CONGRESS"), 1450, 900, t=19.8),
-        P(art.hand_stop(), 1450, 470, t=20.6, anchor="c", idle="shake"),
-        L("NOT SO FAST!", 1450, 200, t=21.0, size=70, rot=4, bgc=(255, 120, 100)),
+        P(art.hand_stop(), 1450, 440, t=20.6, anchor="c", idle="shake"),
+        P(art.building("congress", 620, 480, label="CONGRESS"), 1450, 1000, t=19.8),
+        L("NOT SO FAST!", 1450, 130, t=21.0, size=70, rot=4, bgc=(255, 120, 100)),
     ]))
     S.append(Scene(23.2, "washington", [
         P(art.building("capitol", 900, 420), W / 2, 700, t=23.2, enter="none"),
@@ -67,8 +67,8 @@ def build():
         L("LANDLOCKED", 1650, 300, t=41.5, size=56, rot=4),
         L("6.5 MILLION\nPEOPLE", 1690, 760, t=43.4, size=60, rot=-3, bgc=(255, 230, 120)),
     ]))
-    S.append(Scene(48.5, "street_py", [
-        P(art.building("bank", 760, 560, label="ueno"), 720, 900, t=48.6),
+    S.append(Scene(48.5, "street_py_far", [
+        P(art.building("bank", 760, 560, label="ueno"), 720, 1000, t=48.6),
         L("SPELT WITH A\nLOWERCASE 'u'", 1420, 330, t=50.8, size=56, rot=3),
         L("ROOTS: A FINANCE\nCOMPANY, FOUNDED 1976", 1420, 640, t=53.8, size=52, rot=-2, bgc=(240, 220, 180)),
     ]))
@@ -85,15 +85,20 @@ def build():
     S.append(Scene(69.0, "paper_blue", [
         P(art.phone(0.8, screen="app"), 960, 760, t=69.1),
         L("COMPARED TO NUBANK,\nMONZO & REVOLUT", 960, 200, t=70.0, size=56, rot=-2),
-        P(art.phone(0.6, screen="video"), 520, 840, t=70.6, idle="bob"),
-        P(art.phone(0.6, screen="video"), 1400, 840, t=71.0, idle="bob"),
-        P(art.phone(0.6, screen="video"), 260, 900, t=71.4, idle="bob"),
+        P(art.phone(0.6, screen="brand", txt="NUBANK"), 520, 840, t=70.6, idle="bob"),
+        P(art.phone(0.6, screen="brand", txt="MONZO"), 1400, 840, t=71.0, idle="bob"),
+        P(art.phone(0.6, screen="brand", txt="REVOLUT"), 1660, 900, t=71.4, idle="bob"),
     ]))
-    S.append(Scene(73.8, "street", [
-        P(art.building("central", 700, 520, label="CENTRAL BANK"), 600, 900, t=73.8),
-        L("END OF 2023", 1400, 260, t=74.3, size=64, rot=3),
-        P(art.stamp("FULL BANK\nLICENCE".replace("\n", " "), col=(30, 140, 60), size=64), 1400, 560, t=79.4,
-          anchor="c", enter="slam"),
+    S.append(Scene(73.8, "street_far", [
+        P(art.building("central", 600, 470, label="CENTRAL BANK"), 420, 1000, t=73.8),
+        L("END OF 2023", W / 2, 170, t=74.3, size=64, rot=3),
+        P(art.arrow(220, 100, (40, 120, 200)), 830, 720, t=76.0, anchor="c"),
+        P(art.document("BANKING LICENCE", 4, 280, 340), 1060, 960, t=76.6, id="licence"),
+        P(art.arrow(220, 100, (40, 120, 200)), 1290, 720, t=77.6, anchor="c"),
+        P(art.building("bank", 520, 460, label="ueno"), 1640, 1000, t=78.0, id="ueno"),
+        P(art.stamp("APPROVED", col=(30, 140, 60), size=56), 1060, 800, t=79.4, anchor="c", enter="slam",
+          target="licence"),
+        L("A FULL BANK LICENCE", W / 2, 345, t=79.9, size=56, rot=-2, bgc=(200, 240, 200)),
     ]))
     S.append(Scene(81.7, "office_in", [
         C("cbchief", 620, GROUND, t=81.8, a={"move": (88.6, 91.0, 1700, GROUND)}),
@@ -125,7 +130,7 @@ def build():
         L("+1 MILLION CUSTOMERS", 1300, 960, t=112.4, size=68, rot=3, bgc=(255, 230, 120)),
     ]))
     S.append(Scene(113.9, "locker", [
-        *[C("player", 380 + i * 300, GROUND, t=114.0 + i * 0.15, scale=1.0, hair_col=[(30, 20, 15), (90, 55, 25), (20, 20, 20), (60, 40, 20)][i],
+        *[C("player", 380 + i * 300, GROUND, t=114.0 + i * 0.15, scale=1.0, vary=10 + i, hair_col=[(30, 20, 15), (90, 55, 25), (20, 20, 20), (60, 40, 20)][i],
             skin=["tan", "brown", "light", "tan"][i]) for i in range(4)],
         L("SPONSOR OF THE\nNATIONAL TEAM", 960, 200, t=114.4, size=62, rot=-2),
         C("exec", 1650, GROUND, t=118.6, scale=1.0, mouth="smile"),
@@ -150,9 +155,10 @@ def build():
     ]))
     # --- part 3
     S.append(part_card(144.9, 3, "THE PUBLIC MONEY", "paper_blue"))
-    S.append(Scene(147.2, "street", [
-        P(art.building("congress", 560, 460, label="GOVERNMENT"), 380, 900, t=147.3),
-        P(art.building("bank", 560, 460, label="ueno"), 1540, 900, t=147.5),
+    S.append(Scene(147.2, "street_far", [
+        P(art.building("congress", 560, 460, label="GOVERNMENT"), 380, 1000, t=147.3),
+        P(art.building("bank", 560, 460, label="ueno"), 1540, 1000, t=147.5),
+        P(art.arrow(300, 110, (240, 190, 60)), 960, 700, t=149.6, anchor="c"),
         *[P(art.cash_stack(0.8), 780 + i * 125, 560 + abs(i - 1.5) * 30, t=149.9 + i * 0.2, anchor="c",
             idle="bob", phase=i * .3, ok="cash") for i in range(4)],
         L("NOT JUST ORDINARY PEOPLE'S MONEY", 960, 140, t=148.0, size=56, rot=-2, out=150.0),
@@ -165,13 +171,13 @@ def build():
         L("ECONOMY MINISTRY: ~$850M", 1380, 230, t=161.6, size=54, rot=2, bgc=(255, 255, 255)),
         L("INCL. ITAIPÚ & YACYRETÁ DAMS", 1380, 400, t=166.0, size=44, rot=-2, bgc=(200, 235, 255)),
     ]))
-    S.append(Scene(170.3, "street_py", [
-        P(art.building("ips", 640, 480, label="IPS"), 560, 900, t=170.3),
+    S.append(Scene(170.3, "street_py_far", [
+        P(art.building("ips", 640, 480, label="IPS"), 560, 1000, t=170.3),
         L("SOCIAL SECURITY INSTITUTE", 560, 250, t=171.6, size=50, rot=-2),
-        P(art.money_bag("$355M", 1.4), 1250, 950, t=176.4),
-        L("RETIREMENT MONEY", 1250, 450, t=180.4, size=60, rot=3, bgc=(255, 230, 120)),
-        C("pensioner", 1600, GROUND, t=180.6, scale=1.0, eyes="worried", a={"ok": "pair"}),
-        C("granny", 1780, GROUND, t=180.9, scale=1.0, eyes="worried", flip=True, a={"ok": "pair"}),
+        P(art.money_bag("$355M", 1.4), 1180, 960, t=176.4),
+        L("RETIREMENT MONEY", 1300, 420, t=180.4, size=60, rot=3, bgc=(255, 230, 120)),
+        C("pensioner", 1480, GROUND, t=180.6, scale=1.0, eyes="worried", a={"ok": "pair"}),
+        C("granny", 1660, GROUND, t=180.9, scale=1.0, eyes="worried", flip=True, a={"ok": "pair"}),
     ]))
     S.append(Scene(182.5, "office_in", [
         C("finchief", 560, GROUND - 30, t=182.6),
@@ -181,8 +187,8 @@ def build():
         L("\"AUDITS FOUND\nNO VIOLATIONS\"", 1350, 470, t=189.4, size=54, rot=-2, bgc=(200, 240, 200),
           out=192.5),
         P(art.risk_meter(), 1350, 760, t=192.6, anchor="c"),
-        Actor(art.needle(150), 1350, 760 + 95, t=192.6, anchor="c", enter="pop", idle="none",
-              spin=(193.4, 195.8, -150, -40)),
+        Actor(art.needle(150), 1350, 760 + 64, t=192.6, anchor="c", enter="pop", idle="none",
+              spin=(193.4, 195.8, 30, 150)),
         L("MINIMUM RISK SCORE LOWERED", 1350, 450, t=193.4, size=50, rot=-2, bgc=(255, 140, 120)),
         L("\"TO DIVERSIFY\"", 900, 640, t=196.6, size=50, rot=4, bgc=(255, 255, 255)),
     ]))
@@ -190,10 +196,9 @@ def build():
         C("senator", 560, GROUND, t=199.3, talk=[(199.32, 205.44)], eyes="angry", mouth="shout",
           arms="up"),
         P(art.bubble("\"The biggest swindle\nfrom political power of\nParaguay's democratic era!\"", 50),
-          1200, 470, t=199.6, anchor="c"),
+          1200, 470, t=199.6, anchor="c", id="swindle", target="senator"),
         L("OPPOSITION SENATOR", 400, 330, t=199.8, size=46, rot=-3),
-        P(art.stamp("ALLEGATION - NOT PROVEN", col=(200, 30, 40), size=60, rot=-8), 1200, 860, t=206.2,
-          anchor="c", enter="slam"),
+        L("ALLEGATION - NOT PROVEN", 1200, 800, t=206.2, size=56, rot=-4, bgc=(255, 140, 120), enter="slam"),
     ]))
     # --- part 4
     S.append(part_card(209.7, 4, "THE PRESIDENT'S SHARES", "paper_purple"))
@@ -203,7 +208,7 @@ def build():
         L("47 · ECONOMIST", 1250, 220, t=216.6, size=58, rot=2, bgc=(255, 255, 255)),
         L("EX CENTRAL BANK & IMF", 1250, 380, t=219.4, size=52, rot=-2, bgc=(220, 240, 255), out=225.5),
         C("cartes", 1250, GROUND + 40, t=222.6, scale=0.95, mouth="smile"),
-        P(art.bubble("\"A bright\nyoung man!\"", 46, tail="left"), 1640, 560, t=225.6, anchor="c"),
+        P(art.bubble("\"A bright\nyoung man!\"", 46, tail="left"), 1640, 560, t=225.6, anchor="c", target="cartes"),
         L("FINANCE MINISTER UNDER CARTES", 1250, 520, t=223.4, size=40, rot=1, out=225.5),
     ]))
     S.append(Scene(228.8, "street_py", [
@@ -228,17 +233,18 @@ def build():
         C("pena", 560, GROUND - 30, t=250.6, talk=[(251.58, 253.44)]),
         P(art.podium("PRESIDENCY"), 560, 1010, t=250.6, enter="none"),
         L("HIS DEFENCE:", 1300, 160, t=250.6, size=58, rot=-2),
-        P(art.bubble("\"I was an investor.\nI'm an economist.\"", 56), 1250, 400, t=251.6, anchor="c"),
+        P(art.bubble("\"I was an investor.\nI'm an economist.\"", 56), 1250, 400, t=251.6, anchor="c", target="pena"),
         L("\"NO LINK TO ueno BANK ITSELF\"", 1250, 760, t=254.6, size=50, rot=2, bgc=(255, 255, 255)),
     ]))
     S.append(Scene(258.2, "street", [
         C("pena", W / 2, GROUND, t=258.2, talk=[(263.0, 265.36)], eyes="angry"),
-        C("reporter", 400, GROUND, t=258.4, scale=1.0, flip=True),
-        C("reporter", 700, GROUND, t=258.6, scale=0.95, skin="brown", hair="short", hair_col=(20, 20, 20),
+        C("reporter", 400, GROUND, t=258.4, scale=1.0, vary=80, flip=True),
+        C("reporter", 700, GROUND, t=258.6, scale=0.95, vary=81, skin="brown", hair="short", hair_col=(20, 20, 20),
           col=(200, 120, 60)),
-        C("reporter", 1500, GROUND, t=258.8, scale=1.0, skin="pale", col=(90, 90, 170)),
+        C("reporter", 1500, GROUND, t=258.8, scale=1.0, vary=82, skin="pale", col=(90, 90, 170)),
         L("STATE & PENSION MONEY\nSTEERED TO ueno?", 640, 200, t=259.2, size=50, rot=-2, out=263.0),
-        P(art.bubble("\"A false media\ncampaign!\"", 56, tail="right"), 1250, 300, t=263.0, anchor="c", out=266.1),
+        P(art.bubble("\"A false media\ncampaign!\"", 56, tail="left"), 1250, 300, t=263.0, anchor="c", out=266.1,
+          target="pena"),
         L("ueno: \"NO DIRECT RELATIONSHIP\"", 960, 120, t=266.2, size=50, rot=2, bgc=(160, 230, 210)),
     ]))
     # --- part 5
@@ -251,20 +257,22 @@ def build():
         P(art.arrow(260, 110, (40, 120, 200)), 1300, 470, t=281.0, anchor="c"),
         L("COMPANIES TIED TO\nITS OWNER", 1650, 330, t=281.4, size=46, rot=3, bgc=(255, 230, 120)),
     ]))
-    S.append(Scene(284.3, "night", [
-        P(art.clock(3), 360, 360, t=284.4, anchor="c"),
-        L("TUESDAY, NOV 3\nEARLY HOURS", 360, 620, t=285.0, size=50, rot=-3),
-        P(art.building("central", 640, 480, label="CENTRAL BANK"), 1200, 900, t=284.6),
-        P(art.stamp("IN RESOLUTION", size=70), 1200, 400, t=289.0, anchor="c", enter="slam"),
-        L("SOLVENCY BELOW HALF\nTHE LEGAL MINIMUM", 1200, 180, t=291.2, size=46, rot=2, bgc=(255, 140, 120)),
+    S.append(Scene(284.3, "night_far", [
+        P(art.clock(3), 250, 260, t=284.4, anchor="c"),
+        L("TUESDAY, NOV 3\nEARLY HOURS", 250, 480, t=285.0, size=46, rot=-3),
+        P(art.building("central", 560, 440, label="CENTRAL BANK"), 760, 1000, t=284.6),
+        P(art.arrow(220, 100, (240, 190, 60)), 1150, 740, t=287.4, anchor="c"),
+        P(art.building("bank", 560, 440, label="ueno"), 1560, 1000, t=287.0, id="ueno"),
+        P(art.stamp("IN RESOLUTION", size=58), 1560, 780, t=289.0, anchor="c", enter="slam", target="ueno"),
+        L("SOLVENCY BELOW HALF\nTHE LEGAL MINIMUM", 1560, 300, t=291.2, size=46, rot=2, bgc=(255, 140, 120)),
     ]))
-    S.append(Scene(294.4, "street", [
-        P(art.building("bank", 640, 500, label="ueno"), W / 2, 900, t=294.4, enter="none"),
-        P(art.ice_block(700, 560), W / 2, 940, t=294.6, enter="drop"),
+    S.append(Scene(294.4, "street_far", [
+        P(art.building("bank", 640, 500, label="ueno"), W / 2, 1000, t=294.4, enter="none"),
+        P(art.ice_block(700, 560), W / 2, 1040, t=294.6, enter="drop"),
         L("EVERY ACCOUNT FROZEN", W / 2, 170, t=294.9, size=76, rot=-2, bgc=(200, 235, 255)),
     ]))
-    S.append(Scene(296.6, "street_py", [
-        P(art.building("bank", 520, 440, label="ueno"), 1640, 900, t=296.6, enter="none"),
+    S.append(Scene(296.6, "street_py_far", [
+        P(art.building("bank", 520, 440, label="ueno"), 1640, 1000, t=296.6, enter="none"),
         *crowd(160, 1300, GROUND, 8, scale=0.6, t=296.8, eyes="worried", mouth="frown", seed=120),
         L("~3 MILLION LOCKED OUT", 700, 170, t=297.4, size=66, rot=-2),
         C("pensioner", 1050, GROUND, t=300.8, scale=0.8, eyes="worried", mouth="frown", a={"ok": "crowd"}),
@@ -275,8 +283,8 @@ def build():
         *[P(art.phone(0.8, screen="error"), 300 + i * 440, 900, t=310.0 + i * 0.4, idle="shake") for i in range(4)],
         L("BANKING APPS GO DOWN", W / 2, 200, t=312.4, size=74, rot=-2),
     ]))
-    S.append(Scene(315.6, "street", [
-        P(art.building("central", 620, 470, label="CENTRAL BANK"), W / 2, 880, t=315.6, enter="none"),
+    S.append(Scene(315.6, "street_far", [
+        P(art.building("central", 620, 470, label="CENTRAL BANK"), W / 2, 1000, t=315.6, enter="none"),
         C("cbchief", 760, GROUND, t=315.7, eyes="worried", hold="briefcase",
           a={"move": (316.4, 319.0, -300, GROUND)}),
         L("CENTRAL BANK CHIEF RESIGNS", W / 2, 160, t=316.0, size=60, rot=-2),
@@ -284,13 +292,13 @@ def build():
         L("NEW CHIEF", 1300, 380, t=319.6, size=50, rot=3, bgc=(255, 230, 120)),
     ]))
     S.append(Scene(321.1, "locker", [
-        *[C("player", 300 + i * 220, GROUND, t=321.2 + i * 0.1, scale=0.95, eyes="angry",
+        *[C("player", 240 + i * 205, GROUND, t=321.2 + i * 0.1, scale=0.95, vary=20 + i, eyes="angry", a={"ok": "team"},
             skin=["tan", "brown", "light", "tan", "brown"][i]) for i in range(5)],
-        C("lawyer", 1500, GROUND, t=323.7),
-        L("10 PLAYERS HIRE A LAWYER", 760, 170, t=323.9, size=58, rot=-2),
-        P(art.bubble("\"The bank lied\nto footballers!\"", 46, tail="right"), 1350, 300, t=325.2, anchor="c",
+        C("lawyer", 1380, GROUND, t=323.7),
+        L("10 PLAYERS HIRE A LAWYER", 520, 170, t=323.9, size=58, rot=-2),
+        P(art.bubble("\"The bank lied\nto footballers!\"", 46, tail="right"), 1150, 300, t=325.2, anchor="c", target="lawyer",
           out=329.5),
-        P(art.document("TEAM LETTER", 4, 260, 320), 1760, 920, t=328.0),
+        P(art.document("TEAM LETTER", 4, 260, 320), 1700, 960, t=328.0),
         L("\"A FORCEFUL RESPONSE\"", 1300, 320, t=329.6, size=46, rot=3, bgc=(255, 230, 120)),
     ]))
     # --- part 6
@@ -312,7 +320,7 @@ def build():
         L("CASE NOW COVERS 27 PEOPLE", 860, 975, t=358.8, size=54, rot=2, bgc=(255, 230, 120)),
     ]))
     S.append(Scene(361.8, "jail", [
-        *[x for i in range(3) for x in (C("exec", 360 + i * 600, GROUND, t=362.0 + i * 0.3, scale=0.95,
+        *[x for i in range(3) for x in (C("exec", 360 + i * 600, GROUND, t=362.0 + i * 0.3, scale=0.95, vary=30 + i,
                                             eyes="worried", mouth="frown", glasses=i == 1),
                                           P(art.jail_bars(380, 470), 360 + i * 600, GROUND + 10, t=362.2 + i * 0.3,
                                             enter="drop"))],
@@ -320,10 +328,10 @@ def build():
         L("NO SHARING A CELL!", W / 2, 300, t=366.0, size=54, rot=2, bgc=(255, 230, 120)),
     ]))
     S.append(Scene(368.9, "paper_blue", [
-        P(art.yacht(), 560, 820, t=369.0, idle="bob"),
-        P(art.plane(), 1420, 560, t=370.2, idle="bob"),
-        P(art.stamp("SEIZED", size=80), 560, 560, t=371.4, anchor="c", enter="slam"),
-        P(art.stamp("SEIZED", size=80, rot=8), 1420, 420, t=372.4, anchor="c", enter="slam"),
+        P(art.yacht(), 560, 820, t=369.0, idle="bob", id="yacht"),
+        P(art.plane(), 1420, 560, t=370.2, idle="bob", id="plane"),
+        P(art.stamp("SEIZED", size=80), 560, 690, t=371.4, anchor="c", enter="slam", target="yacht"),
+        P(art.stamp("SEIZED", size=80, rot=8), 1420, 420, t=372.4, anchor="c", enter="slam", target="plane"),
         L("ALL PRESUMED INNOCENT", W / 2, 990, t=374.8, size=60, rot=-1, bgc=(255, 255, 255)),
     ]))
     S.append(Scene(377.1, "chamber", [
@@ -338,26 +346,27 @@ def build():
     S.append(part_card(393.3, 7, "THE STREETS", "paper_red"))
     signs = [("sign", "WHERE'S\nOUR MONEY?"), ("sign", "PEÑA\nANSWER!"), ("sign", "GIVE IT\nBACK!"),
              ("sign", "JUSTICE!")]
-    S.append(Scene(395.0, "dusk", [
-        P(art.building("congress", 760, 560, label="CONGRESS"), W / 2, 820, t=395.0, enter="none"),
+    S.append(Scene(395.0, "dusk_far", [
+        P(art.building("congress", 760, 560, label="CONGRESS"), W / 2, 1000, t=395.0, enter="none"),
         *crowd(160, 1760, GROUND + 40, 8, scale=0.62, t=395.4, mouth="shout", eyes="angry", seed=300,
                hold=signs + [None, None, None, None], rows=2),
         L("ANGER EXPLODES", W / 2, 150, t=395.6, out=397.6, size=72, rot=-2, bgc=(255, 140, 120)),
         L("THOUSANDS OUTSIDE CONGRESS", W / 2, 150, t=397.6, size=52, rot=2),
     ]))
     S.append(Scene(403.6, "night", [
-        *[C("riot", 1100 + i * 190, GROUND, t=403.7 + i * 0.08, scale=0.85, flip=True) for i in range(4)],
+        *[C("riot", 1100 + i * 190, GROUND, t=403.7 + i * 0.08, scale=0.85, vary=40 + i, flip=True, a={"ok": "police"}) for i in range(4)],
         *crowd(140, 900, GROUND, 5, scale=0.62, t=403.8, mouth="shout", eyes="angry", seed=340,
                hold=signs + [None]),
         L("PROTESTERS PUSH POLICE LINES", W / 2, 160, t=404.2, size=58, rot=-2),
     ]))
-    S.append(Scene(411.3, "night", [
-        P(art.window_pane(False, 620, 440), W / 2, 820, t=411.3, enter="none", out=414.4),
-        P(art.window_pane(True, 620, 440), W / 2, 820, t=414.4, enter="none"),
+    S.append(Scene(411.3, "night_far", [
+        P(art.building("office", 760, 600, label="ueno", col=(90, 110, 130)), W / 2, 1000, t=411.3, enter="none"),
+        P(art.window_pane(False, 420, 300), W / 2, 760, t=411.3, enter="none", out=414.4, anchor="c", ok=True),
+        P(art.window_pane(True, 420, 300), W / 2, 760, t=414.4, enter="none", anchor="c", ok=True),
         Actor(art.rock(), 200, 900, t=413.4, anchor="c", enter="none", idle="none",
-              move=(413.5, 414.4, W / 2, 620)),
+              move=(413.5, 414.4, W / 2, 760)),
         L("A ueno OFFICE IS SMASHED", W / 2, 140, t=412.0, size=60, rot=-2),
-        L("1 OFFICER HURT · 7 DETAINED", W / 2, 975, t=417.0, size=54, rot=2, bgc=(255, 230, 120)),
+        L("1 OFFICER HURT · 7 DETAINED", W / 2, 300, t=417.0, size=54, rot=2, bgc=(255, 230, 120)),
     ]))
     S.append(Scene(421.1, "chamber", [
         P(art.document("IMPEACHMENT", 7, 380, 470), 520, 980, t=421.2),
@@ -380,12 +389,13 @@ def build():
         L("THE BLOW CAME FROM\nINSIDE HIS OWN PARTY", W / 2, 160, t=449.9, size=56, rot=2, out=453.8),
         L("COLORADO PARTY LEADER\n& PEÑA'S MENTOR", 1350, 330, t=455.0, size=50, rot=2, out=462.5),
         P(art.bubble("\"We will not stand on the\nside of the theft of public,\nprivate and pensioners' funds.\"", 44),
-          1300, 330, t=462.7, anchor="c", out=468.6),
-        P(art.bubble("\"We support the\nimpeachment of\nthe president.\"", 50), 1300, 330, t=468.6, anchor="c"),
+          1300, 330, t=462.7, anchor="c", out=468.6, target="cartes"),
+        P(art.bubble("\"We support the\nimpeachment of\nthe president.\"", 50), 1300, 330, t=468.6, anchor="c",
+          target="cartes"),
     ]))
     S.append(Scene(471.5, "chamber", [
         C("pena", 520, GROUND, t=471.5, eyes="worried", mouth="frown"),
-        *[C("senator", 1000 + i * 240, GROUND, t=471.6, scale=0.95, flip=True,
+        *[C("senator", 1000 + i * 240, GROUND, t=471.6, scale=0.95, vary=50 + i, flip=True,
             skin=["light", "tan", "brown"][i], col=[(40, 40, 50), (110, 40, 40), (60, 60, 90)][i], mustache=i == 1,
             a={"move": (472.0, 474.5, 2300 + i * 200, GROUND)}) for i in range(3)],
         L("HIS PARTY ABANDONS HIM", 1000, 170, t=472.2, size=60, rot=-2, out=474.6),
@@ -395,14 +405,14 @@ def build():
         gavel_actor(1760, 950, 478.4),
     ]))
     S.append(Scene(483.0, "studio", [
-        P(art.tv(art.char("pena", mouth="closed", eyes="worried")), 600, 560, t=483.1, anchor="c"),
+        P(art.tv(art.char("pena", mouth="closed", eyes="worried")), 600, 560, t=483.1, anchor="c", id="tv"),
         L("MEANWHILE... A VIDEO", 600, 180, t=483.2, size=56, rot=-2),
         P(art.bubble("\"I have decided to\nsubmit my resignation.\"", 48, tail="left"), 1380, 330, t=486.0,
-          anchor="c", out=490.3),
+          anchor="c", out=490.3, target="tv"),
         P(art.bubble("\"I want to apologise to\nthe people if at any\npoint I failed.\"", 46, tail="left"),
-          1380, 330, t=490.3, anchor="c", out=494.4),
+          1380, 330, t=490.3, anchor="c", out=494.4, target="tv"),
         P(art.bubble("\"It was never my\nintention to betray\nyour trust.\"", 48, tail="left"), 1380, 330,
-          t=494.4, anchor="c"),
+          t=494.4, anchor="c", target="tv"),
     ]))
     # --- part 9
     S.append(part_card(498.2, 9, "TRUMP'S MAN", "paper_blue"))
@@ -441,7 +451,7 @@ def build():
     ]))
     S.append(Scene(539.5, "paper_red", [
         L("12 DAYS LATER...", W / 2, 160, t=539.5, size=76, rot=-2),
-        C("pena", 620, GROUND - 60, t=539.6, eyes="worried", a={"fall": 540.8, "idle": "none"}),
+        C("pena", 420, GROUND, t=539.6, eyes="worried", a={"fall": 540.8, "idle": "none"}),
         P(art.newspaper("\"ONE OF THE STRONGEST\nBASTIONS OF TRUMP'S\nNETWORK\"", "Colombia's El Tiempo"),
           1320, 860, t=542.7),
     ]))
@@ -449,8 +459,8 @@ def build():
     S.append(part_card(549.4, 10, "THE TRIAL", "paper_purple"))
     S.append(Scene(551.0, "chamber", [
         L("HERE'S THE TWIST", W / 2, 140, t=551.1, size=72, rot=-2, bgc=(255, 230, 120)),
-        P(art.document("RESIGNATION", 5), 620, 950, t=552.4),
-        P(art.stamp("REJECTED", size=72), 620, 700, t=554.6, anchor="c", enter="slam"),
+        P(art.document("RESIGNATION", 5), 620, 950, t=552.4, id="resignation"),
+        P(art.stamp("REJECTED", size=72), 620, 700, t=554.6, anchor="c", enter="slam", target="resignation"),
         L("CONGRESS REFUSES IT", 1350, 420, t=553.6, size=56, rot=2),
         P(art.question(180), 1350, 720, t=556.4, anchor="c", idle="bob"),
     ]))
@@ -461,7 +471,7 @@ def build():
         L("IMPEACHED = NO SHIELD", 1350, 330, t=566.0, size=56, rot=2, bgc=(255, 140, 120)),
     ]))
     S.append(Scene(570.1, "chamber", [
-        *[C("senator", 500 + i * 260, GROUND, t=570.2, scale=0.95, flip=False,
+        *[C("senator", 500 + i * 260, GROUND, t=570.2, scale=0.95, vary=60 + i, flip=False,
             skin=["light", "tan", "brown", "tan"][i], col=[(40, 40, 50), (110, 40, 40), (60, 60, 90), (50, 80, 50)][i],
             mustache=i % 2 == 0, a={"move": (572.6 + i * 0.2, 575.0 + i * 0.2, 2400, GROUND)}) for i in range(4)],
         L("HIS PARTY'S DEPUTIES WALK OUT", W / 2, 150, t=572.6, size=56, rot=-2),
@@ -469,13 +479,15 @@ def build():
     ]))
     S.append(Scene(577.3, "senate", [
         L("THE SENATE BECOMES A COURT", W / 2, 360, t=577.4, size=60, rot=-2),
-        *crowd(260, 1660, GROUND, 8, scale=0.6, t=577.6, seed=500),
+        *[C("senator", 300 + i * 220, GROUND, t=577.6 + i * 0.05, scale=0.7, vary=70 + i, skin=["light", "tan", "brown", "tan"][i % 4],
+            col=[(40, 40, 50), (110, 40, 40), (60, 60, 90), (50, 80, 50)][i % 4], mustache=i % 3 == 0,
+            a={"ok": "senate", "id": f"sen{i}"}) for i in range(7)],
         L("TO REMOVE HIM: 30 OF 45", W / 2, 520, t=580.8, size=56, rot=2, bgc=(255, 230, 120)),
     ]))
     S.append(Scene(585.8, "senate", [
         C("lawyer", 560, GROUND, t=585.9, talk=[(592.76, 594.22)], arms="up"),
-        P(art.bubble("\"72 more hours\nto prepare?\"", 50), 1200, 330, t=586.6, anchor="c", out=592.7),
-        P(art.bubble("\"This is not\ndue process!\"", 56), 1200, 330, t=592.8, anchor="c"),
+        P(art.bubble("\"72 more hours\nto prepare?\"", 50), 1200, 330, t=586.6, anchor="c", out=592.7, target="lawyer"),
+        P(art.bubble("\"This is not\ndue process!\"", 56), 1200, 330, t=592.8, anchor="c", target="lawyer"),
         L("PEÑA'S SIDE", 560, 360, t=586.2, size=50, rot=-2),
     ]))
     S.append(Scene(594.9, "senate", [
@@ -486,9 +498,9 @@ def build():
         P(art.chair(), 1500, 700, t=598.6),
         L("PEÑA DOESN'T SHOW UP", 1500, 330, t=598.8, size=50, rot=2, bgc=(255, 230, 120)),
     ]))
-    S.append(Scene(600.5, "street", [
+    S.append(Scene(600.5, "street_far", [
         C("lawyer", 520, GROUND, t=600.6, arms="point"),
-        P(art.building("court", 700, 520, label="INTER-AMERICAN COURT"), 1300, 900, t=601.6),
+        P(art.building("court", 700, 520, label="INTER-AMERICAN COURT"), 1300, 1000, t=601.6),
         L("HUMAN RIGHTS CASE?", 1300, 200, t=603.0, size=56, rot=-2),
     ]))
     S.append(Scene(605.1, "sepia", [
@@ -558,7 +570,7 @@ def thumbnails():
     th.put(im, art.vault(520, 520), 1380, 1020)
     th.put(im, art.ice_block(700, 660), 1380, 1080)
     for i, x in enumerate((140, 360, 580)):
-        th.put(im, art.crowd_person(120 + i, scale=1.25, mouth="shout", eyes="angry"), x, 1150)
+        th.put(im, art.crowd_person((7, 15, 30)[i], scale=1.25, mouth="shout", eyes="angry"), x, 1150)
     th.big_text(im, [("3 MILLION", (255, 225, 80)), "LOCKED OUT"], 640, 250, size=170, rot=-4)
     th.big_text(im, ["FROZEN!"], 1380, 470, size=130, fill=(190, 235, 255), rot=6)
     out.append(("B_stakes", im))

@@ -112,16 +112,46 @@ def text_size(s, size, kind="title"):
 
 # ----------------------------------------------------------------------------- characters
 
+def head_outline(q, kind, cx, hy, sk):
+    """Face shape. All fit the same ~226x196 box so hair/hats line up; head_w/head_h stretch it."""
+    a, b = 113, 98
+    if kind == "round":
+        q.ell(cx, hy, 2 * a, 2 * b, sk)
+        return
+    if kind == "square":
+        q.rect(cx - a + 4, hy - b, cx + a - 4, hy + b, sk, r=46)
+        return
+    pts = []
+    for i in range(72):
+        t = 2 * math.pi * i / 72
+        x, y = math.cos(t), math.sin(t)  # y>0 is the lower half (chin side)
+        if kind == "oval":
+            px, py = a * 0.86 * x, b * 1.08 * y
+        elif kind == "egg":      # broad forehead, narrow chin
+            px, py = a * x * (1 - 0.2 * max(0, y)), b * 1.04 * y
+        elif kind == "pear":     # narrow crown, heavy jaw
+            px, py = a * x * (1 + 0.1 * y) * (0.92 if y < 0 else 1.0), b * y
+        elif kind == "bean":     # wide and flat
+            px, py = a * 1.04 * x, b * 0.86 * y + 10
+        else:
+            px, py = a * x, b * y
+        pts.append((cx + px, hy + py))
+    q.poly(pts, sk)
+
+
 def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col=(45, 60, 110),
            tie=(190, 40, 40), mouth="closed", eyes="normal", sash=False, glasses=False, mustache=False,
            beard=False, hat=None, shirt=(240, 240, 240), pants=(50, 50, 60), arms="down", hold=None,
            scale=1.0, flip=False, old=False, look=0, build=1.0, height=1.0, head_w=1.0, brows=None,
-           pin=None, cross=False, jowls=False, tie_w=1.0):
+           pin=None, cross=False, jowls=False, tie_w=1.0, head="round", head_h=1.0, eye_s=1.0,
+           nose=None, ears=False):
     """Cutout character.
     build: body width (0.8 thin, 1.0 average, 1.2 stocky, 1.4 heavy - heavy also gets a belly)
     height: overall size multiplier; head_w: head width multiplier
     brows: None/'thick'/'grey'; pin: lapel pin ('us'/'py'); cross: pendant; jowls: rounder lower face
-    tie_w: tie width multiplier (Trump's tie is wide and extra long via outfit='longtie')"""
+    tie_w: tie width multiplier (Trump's tie is wide and extra long via outfit='longtie')
+    head: round/oval/square/egg/pear/bean outline; head_h: head height multiplier (chin stays put)
+    eye_s: eye size (0.75 small .. 1.2 big); nose: None/'dot'/'button'/'long'/'wide'; ears: draw ears"""
     w, h = 300, 430
     p = Pen(w, h)
     sk = SKIN.get(skin, skin) if isinstance(skin, str) else skin
@@ -211,7 +241,10 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
     hy = 138
     if hair in ("long", "bun"):
         q.ell(cx, hy + 10, 236, 210, hair_col)
-    q.ell(cx, hy, 226, 196, sk)
+    if ears:
+        q.ell(cx - 112, hy + 6, 34, 50, sk)
+        q.ell(cx + 112, hy + 6, 34, 50, sk)
+    head_outline(q, head, cx, hy, sk)
     if jowls:
         q.chord(cx, hy + 34, 214, 150, 0, 180, sk, ol=None)
         q.arc(cx, hy + 34, 214, 150, 20, 160, wd=OUT)
@@ -244,12 +277,41 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
         q.ell(cx, hy - 110, 70, 56, hc)
     elif hair == "long":
         q.chord(cx, hy - 20, 228, 160, 180, 360, hc)
+    elif hair == "spiky":
+        q.chord(cx, hy - 24, 226, 150, 180, 360, hc)
+        for i in range(7):
+            x = cx - 96 + i * 32
+            q.poly([(x - 18, hy - 70 + abs(i - 3) * 8), (x + 2, hy - 128 + abs(i - 3) * 10),
+                    (x + 18, hy - 70 + abs(i - 3) * 8)], hc)
+    elif hair == "afro":
+        for i in range(11):
+            a_ = math.pi * (0.9 + i * 1.2 / 10)
+            q.ell(cx + 112 * math.cos(a_), hy - 30 + 100 * math.sin(a_), 80, 80, hc)
+        q.ell(cx, hy - 90, 200, 90, hc, ol=None)
+    elif hair == "mohawk":
+        q.poly([(cx - 22, hy - 92), (cx - 10, hy - 140), (cx + 10, hy - 140), (cx + 22, hy - 92)], hc)
+        q.chord(cx, hy - 26, 226, 150, 200, 340, tuple(int(v * 0.6 + s * 0.4) for v, s in zip(hc, sk)), ol=None)
+    elif hair == "buzz":
+        q.chord(cx, hy - 22, 224, 156, 180, 360, tuple(int(v * 0.55 + s * 0.45) for v, s in zip(hc, sk)), ol=None)
+        q.arc(cx, hy - 22, 224, 156, 180, 360, wd=OUT)
+    elif hair == "ponytail":
+        q.ell(cx + 120, hy - 10, 56, 110, hc)
+        q.chord(cx, hy - 20, 228, 160, 180, 360, hc)
+    elif hair == "receding":
+        q.chord(cx - 92, hy - 10, 50, 110, 90, 270, hc)
+        q.chord(cx + 92, hy - 10, 50, 110, 270, 90, hc)
+        q.ell(cx, hy - 92, 50, 16, hc, ol=None)
+    elif hair == "beanie":
+        q.chord(cx, hy - 34, 232, 190, 180, 360, col if isinstance(col, tuple) else (200, 60, 60))
+        q.rect(cx - 116, hy - 46, cx + 116, hy - 22, tuple(int(v * 0.8) for v in col), r=8)
+        q.ell(cx, hy - 132, 36, 36, (240, 240, 240))
     elif hair == "curly":
         for i in range(9):
             a = math.pi + i * math.pi / 8
             q.ell(cx + 100 * math.cos(a), hy - 10 + 85 * math.sin(a), 56, 56, hc)
     # eyes
-    ex, ey = 26, hy - 18
+    es = eye_s
+    ex, ey = 26 * es, hy - 18 - 6 * (es - 1)
     if eyes == "blink":
         q.line([(cx - ex - 24, ey), (cx - ex + 24, ey)], w=4)
         q.line([(cx + ex - 24, ey), (cx + ex + 24, ey)], w=4)
@@ -261,8 +323,8 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
         q.line([(cx - ex - 26, ey - 8), (cx - ex + 24, ey - 12)], w=5)
         q.line([(cx + ex + 26, ey - 8), (cx + ex - 24, ey - 12)], w=5)
     else:
-        q.ell(cx - ex, ey, 54, 62, (255, 255, 255), ow=2)
-        q.ell(cx + ex, ey, 54, 62, (255, 255, 255), ow=2)
+        q.ell(cx - ex, ey, 54 * es, 62 * es, (255, 255, 255), ow=2)
+        q.ell(cx + ex, ey, 54 * es, 62 * es, (255, 255, 255), ow=2)
         q.ell(cx - ex + 6 + look, ey + 4, 9, 9, INK, ol=None)
         q.ell(cx + ex - 6 + look + (6 if look else 0), ey + 4, 9, 9, INK, ol=None)
         if eyes == "angry":
@@ -278,6 +340,14 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
     if glasses:
         q.arc(cx - ex, ey, 64, 70, 0, 360, wd=3)
         q.arc(cx + ex, ey, 64, 70, 0, 360, wd=3)
+    if nose == "dot":
+        q.ell(cx, hy + 26, 12, 9, tuple(int(v * 0.8) for v in sk), ol=None)
+    elif nose == "button":
+        q.ell(cx, hy + 24, 22, 18, tuple(int(v * 0.92) for v in sk), ow=2)
+    elif nose == "long":
+        q.poly([(cx - 4, hy + 2), (cx + 18, hy + 34), (cx - 6, hy + 36)], tuple(int(v * 0.92) for v in sk), ow=2)
+    elif nose == "wide":
+        q.ell(cx, hy + 26, 36, 18, tuple(int(v * 0.9) for v in sk), ow=2)
     my = hy + 54
     if beard:
         q.chord(cx, hy + 40, 170, 140, 0, 180, hair_col if hair_col != (0, 0, 0) else (60, 40, 30), ol=None)
@@ -308,6 +378,15 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
         q.chord(cx, hy - 50, 220, 150, 180, 360, (40, 50, 70))
         q.rect(cx - 70, hy - 66, cx + 70, hy - 30, (150, 200, 230), ow=2)
     head = q.im
+    if abs(head_h - 1) > 1e-3:  # stretch/squash vertically about the chin (y=236)
+        chin = 236 * K
+        top = head.crop((0, 0, head.width, chin))
+        nh = int(chin * head_h)
+        top = top.resize((head.width, nh), Image.LANCZOS)
+        hh = Image.new("RGBA", head.size, (0, 0, 0, 0))
+        hh.alpha_composite(top.crop((0, max(0, nh - chin), head.width, nh)), (0, max(0, chin - nh)))
+        hh.alpha_composite(head.crop((0, chin, head.width, head.height)), (0, chin))
+        head = hh
     if abs(head_w - 1) > 1e-3:
         nw = int(head.width * head_w)
         head = head.resize((nw, head.height), Image.LANCZOS)
@@ -387,22 +466,25 @@ CAST = {
     "dom": dict(skin="light", hair="short", hair_col=(95, 60, 35), outfit="shirt", col=(60, 120, 190)),
     # Santiago Pena: 47, solid build, round face, short dark side-parted hair, presidential sash
     "pena": dict(skin="tan", hair="side", hair_col=(35, 28, 25), outfit="suit", col=(35, 45, 80),
-                 tie=(40, 70, 160), sash=True, build=1.15, head_w=1.06, pin="py"),
+                 tie=(40, 70, 160), sash=True, build=1.15, head_w=1.06, pin="py", head="round", nose="wide"),
     "pena_nosash": dict(skin="tan", hair="side", hair_col=(35, 28, 25), outfit="suit", col=(35, 45, 80),
-                        tie=(40, 70, 160), build=1.15, head_w=1.06),
+                        tie=(40, 70, 160), build=1.15, head_w=1.06, head="round", nose="wide"),
     # Trump: big frame, blond swept comb-over, orange tan, long wide red tie, flag pin, pursed mouth
     "trump": dict(skin="orange", hair="swoop", hair_col=(242, 206, 110), outfit="longtie", col=(28, 36, 70),
                   tie=(215, 25, 35), tie_w=1.5, build=1.42, height=1.08, head_w=1.1, jowls=True,
-                  pin="us", brows="thick", rest="pout"),
+                  pin="us", brows="thick", rest="pout", head="pear", eye_s=0.85,
+                  nose="button"),
     # Horacio Cartes: older, heavy-set, bald with grey sides, businessman's grey suit
     "cartes": dict(skin="light", hair="bald", hair_col=(190, 190, 190), outfit="suit", col=(80, 80, 85),
-                   tie=(200, 40, 40), old=True, build=1.38, head_w=1.08, jowls=True, brows="grey"),
+                   tie=(200, 40, 40), old=True, build=1.38, head_w=1.08, jowls=True, brows="grey", head="bean",
+                   ears=True, nose="wide", eye_s=0.9),
     # Marco Rubio: slim, youthful, short dark hair, thick dark eyebrows
     "rubio": dict(skin="tan", hair="short", hair_col=(40, 30, 25), outfit="suit", col=(40, 45, 60),
-                  tie=(60, 90, 170), build=0.92, brows="thick", pin="us"),
+                  tie=(60, 90, 170), build=0.92, brows="thick", pin="us", head="oval", head_h=1.08),
     # Scott Bessent: tall and lean, neat silver hair swept back
     "bessent": dict(skin="light", hair="slick", hair_col=(205, 205, 210), outfit="suit", col=(40, 45, 60),
-                    tie=(140, 40, 60), build=0.85, height=1.06, head_w=0.94, pin="us"),
+                    tie=(140, 40, 60), build=0.85, height=1.06, head_w=0.9, pin="us", head="oval",
+                    head_h=1.14, nose="long", eye_s=0.85),
     "cbchief": dict(skin="light", hair="side", hair_col=(120, 120, 120), outfit="suit", col=(90, 95, 105),
                     tie=(40, 120, 90), glasses=True, build=0.95),
     "newchief": dict(skin="tan", hair="short", hair_col=(50, 40, 30), outfit="suit", col=(70, 60, 90),
@@ -419,10 +501,11 @@ CAST = {
                    tie=(120, 30, 30), glasses=True, build=0.9),
     # Pedro Alliana: heavier build, dark hair, thick moustache
     "alliana": dict(skin="tan", hair="short", hair_col=(30, 25, 20), outfit="suit", col=(50, 70, 50),
-                    tie=(200, 40, 40), mustache=True, build=1.3, head_w=1.05, brows="thick"),
+                    tie=(200, 40, 40), mustache=True, build=1.3, head_w=1.05, brows="thick", head="square",
+                    nose="wide"),
     # Fernando Lugo: former Catholic bishop - lean, white beard, bald crown, open shirt, small cross
     "lugo": dict(skin="tan", hair="bald", hair_col=(225, 225, 225), outfit="shirt", col=(150, 130, 100),
-                 beard=True, cross=True, build=0.88),
+                 beard=True, cross=True, build=0.88, head="egg", head_h=1.1, ears=True, nose="long"),
     "cop": dict(skin="tan", hair="short", outfit="uniform", col=(40, 60, 110), hat="police",
                 pants=(30, 40, 80), build=1.1),
     "riot": dict(skin="tan", hair="short", outfit="uniform", col=(35, 40, 55), hat="helmet",
@@ -436,6 +519,22 @@ CAST = {
     "granny": dict(skin="tan", hair="bun", hair_col=(220, 220, 220), outfit="dress", col=(120, 90, 160),
                    old=True, glasses=True, build=1.05, height=0.92),
 }
+
+HEADS = ["round", "oval", "square", "egg", "pear", "bean"]
+
+
+def varied(seed, **kw):
+    """Look-variety for generic characters (players, senators, extras) - same random pool as crowds."""
+    rng = random.Random(seed * 104729)
+    d = dict(head=rng.choice(HEADS), head_h=rng.choice([0.92, 1.0, 1.08, 1.14]),
+             head_w=rng.choice([0.9, 0.96, 1.0, 1.06]), eye_s=rng.choice([0.8, 0.9, 1.0, 1.12]),
+             nose=rng.choice([None, "dot", "button", "long", "wide"]), ears=rng.random() < 0.3,
+             hair=rng.choice(["short", "curly", "side", "spiky", "buzz", "receding", "afro", "slick"]),
+             hair_col=rng.choice([(40, 30, 20), (90, 55, 25), (20, 20, 20), (180, 130, 60), (130, 80, 40)]),
+             build=rng.choice([0.85, 0.95, 1.0, 1.1, 1.25]))
+    d.update(kw)
+    return d
+
 
 CROWD_COLS = [(220, 90, 60), (70, 150, 200), (240, 190, 60), (110, 180, 90), (170, 90, 170), (230, 120, 160),
               (90, 90, 180), (60, 170, 160), (200, 60, 60)]
@@ -469,12 +568,17 @@ def char_set(name, scale=1.0, flip=False, mouth="closed", eyes="normal", **kw):
 @functools.lru_cache(None)
 def crowd_person(i, scale=0.6, mouth="closed", eyes="normal", hold=None, flip=False, arms="down"):
     rng = random.Random(i * 7919)
-    return person(skin=rng.choice(CROWD_SKIN), hair=rng.choice(["short", "long", "curly", "side", "bun", "bald"]),
+    return person(skin=rng.choice(CROWD_SKIN), hair=rng.choice(["short", "long", "curly", "side", "bun", "bald", "spiky",
+                                                                "afro", "mohawk", "buzz", "ponytail", "receding",
+                                                                "beanie"]),
+                  head=rng.choice(HEADS), head_h=rng.choice([0.92, 1.0, 1.0, 1.08, 1.14]),
+                  eye_s=rng.choice([0.8, 0.9, 1.0, 1.0, 1.12]), nose=rng.choice([None, None, "dot", "button", "long", "wide"]),
+                  ears=rng.random() < 0.3,
                   hair_col=rng.choice(CROWD_HAIR), outfit="shirt", col=rng.choice(CROWD_COLS),
                   mouth=mouth, eyes=eyes, scale=scale, hold=hold, flip=flip, arms=arms,
                   glasses=rng.random() < 0.2, pants=rng.choice([(50, 50, 60), (40, 60, 120), (90, 70, 50)]),
                   build=rng.choice([0.85, 0.95, 1.0, 1.1, 1.25, 1.4]), height=rng.choice([0.92, 1.0, 1.0, 1.06]),
-                  head_w=rng.choice([0.96, 1.0, 1.04]))
+                  head_w=rng.choice([0.9, 0.96, 1.0, 1.04, 1.1]))
 
 
 # ----------------------------------------------------------------------------- props
@@ -503,6 +607,11 @@ def phone(scale=1.0, screen="app", txt=None):
                                       ("PENSION", (220, 120, 160))]):
             p.rect(36, 70 + i * 92, 184, 140 + i * 92, c, r=12, ow=2)
             p.text(110, 106 + i * 92, lab, 28, fill=INK)
+    elif screen == "brand":  # another bank's app, shown by name only
+        p.rect(24, 40, 196, 110, (90, 90, 110), ol=None)
+        p.text(110, 76, txt or "", 30 if len(txt or "") < 7 else 24, fill=(255, 255, 255))
+        for i in range(3):
+            p.rect(40, 130 + i * 70, 180, 185 + i * 70, (210, 210, 220), r=10, ow=2)
     elif screen == "video":
         p.rect(24, 40, 196, 350, (30, 30, 50), ow=2, r=8)
     p.ell(110, 370, 22, 12, (80, 80, 80), ol=None)
@@ -683,7 +792,7 @@ def bubble(txt, size=46, tail="left", w_max=None):
     for i, l in enumerate(lines):
         p.text(cx, cy - th / 2 + lh * (i + 0.5), l, size, kind="hand")
     im = p.done()
-    im.info.update(kind="bubble", text=txt, ellipse=(cx, cy, w / 2 - 2, h / 2 - 2),
+    im.info.update(kind="bubble", text=txt, tail=tail, ellipse=(cx, cy, w / 2 - 2, h / 2 - 2),
                    textbox=(cx - tw / 2, cy - th / 2, cx + tw / 2, cy + th / 2))
     return im
 
@@ -789,12 +898,12 @@ def rocket_chart(w=760, h=480):
 
 
 def risk_meter(level=0.8):
-    p = Pen(420, 260)
+    p = Pen(420, 300)
     p.pie(210, 220, 380, 380, 180, 240, (220, 60, 50))
     p.pie(210, 220, 380, 380, 240, 300, (240, 190, 60))
     p.pie(210, 220, 380, 380, 300, 360, (90, 180, 90))
     p.chord(210, 220, 180, 180, 180, 360, (255, 253, 240))
-    p.text(210, 245, "RISK SCORE", 26)
+    p.text(210, 268, "RISK SCORE", 26)
     return p.done()
 
 
@@ -1117,6 +1226,10 @@ def _bg_base(sky, ground, horizon=780):
     return p
 
 
+HORIZON, ROAD_END = 800, 900  # street geometry: building bases / near kerb
+STREETS = {"street", "night", "street_py", "washington", "wallst", "dusk", "sepia"}
+
+
 def bg(kind):
     rng = random.Random(kind)
     if kind == "studio":
@@ -1136,12 +1249,20 @@ def bg(kind):
         p.chord(1590, 470, 200, 200, 180, 360, (245, 245, 240))
         p.rect(1480, 470, 1700, 515, (245, 245, 240))
         return paperize(p.done(shadow=False, paper=False).convert("RGB"), 0.12)
-    if kind in ("street", "night", "street_py", "washington", "wallst", "dusk", "sepia"):
-        night = kind == "night"
-        sky = {"night": (30, 35, 80), "dusk": (240, 150, 110), "sepia": (225, 200, 160)}.get(kind, (140, 205, 240))
-        ground = {"night": (60, 60, 70), "sepia": (180, 150, 110)}.get(kind, (150, 150, 150))
-        p = _bg_base(sky, ground, 800)
-        if not night and kind != "sepia":
+    if kind.removesuffix("_far") in STREETS:
+        # Depth layout (back to front): sky -> buildings standing on the horizon (y=800) -> road (800-900)
+        # -> kerb -> near pavement (912-1080) where characters and foreground props stand (GROUND=960).
+        # "<kind>_far" swaps the street buildings for a faint distant skyline, for scenes whose subject is
+        # its own foreground building (so it doesn't look pasted in front of same-size neighbours).
+        far = kind.endswith("_far")
+        base = kind.removesuffix("_far")
+        night = base == "night"
+        sky = {"night": (30, 35, 80), "dusk": (240, 150, 110), "sepia": (225, 200, 160)}.get(base, (140, 205, 240))
+        road = {"night": (45, 45, 52), "sepia": (150, 125, 95)}.get(base, (110, 110, 115))
+        pave = {"night": (75, 75, 85), "sepia": (195, 170, 130)}.get(base, (185, 185, 180))
+        p = Pen(W, H)
+        p.rect(-5, -5, W + 5, HORIZON, sky, ol=None)
+        if not night and base != "sepia":
             for cx, cy in ((300, 160), (900, 110), (1500, 180)):
                 for dx, dy, s in ((0, 0, 120), (70, -20, 140), (150, 0, 110)):
                     p.ell(cx + dx, cy + dy, s * 1.3, s * 0.8, (255, 255, 255), ow=2)
@@ -1149,33 +1270,53 @@ def bg(kind):
             for i in range(60):
                 p.ell(rng.uniform(0, W), rng.uniform(0, 500), 5, 5, (255, 255, 210), ol=None)
             p.ell(1650, 150, 140, 140, (250, 245, 200))
-        p.rect(-5, 860, W + 5, 885, (110, 110, 115) if not night else (50, 50, 55), ol=None)
-        for i in range(0, W, 160):
-            p.rect(i, 868, i + 80, 876, (240, 220, 80), ol=None)
-        if kind not in ("washington",):
+        if base == "washington":
+            p.rect(-5, 640, W + 5, HORIZON, (120, 180, 100), ol=None)
+            for x in range(0, W, 140):
+                p.ell(x + 40, 650, 140, 110, (80, 150, 80), ow=2)
+        else:
             cols = [(220, 170, 140), (200, 200, 170), (170, 190, 210), (230, 210, 160), (190, 160, 190)]
-            if kind == "sepia":
+            if base == "sepia":
                 cols = [(200, 170, 130), (190, 160, 120), (210, 180, 140)]
             x = -40
             while x < W:
-                bw = rng.randint(180, 300)
-                bh = rng.randint(240, 460) if kind != "wallst" else rng.randint(450, 700)
+                if far:
+                    bw, bh = rng.randint(120, 220), rng.randint(90, 230)
+                else:
+                    bw = rng.randint(180, 300)
+                    bh = rng.randint(240, 460) if base != "wallst" else rng.randint(450, 700)
                 c = rng.choice(cols)
                 if night:
                     c = tuple(int(v * 0.4) for v in c)
-                p.rect(x, 800 - bh, x + bw, 800, c)
-                for wy in range(800 - bh + 30, 780, 70):
-                    for wx in range(x + 25, x + bw - 40, 60):
-                        lit = night and rng.random() < 0.4
-                        p.rect(wx, wy, wx + 34, wy + 40, (250, 230, 120) if lit else
-                               ((60, 70, 90) if night else (210, 235, 250)), ow=2)
-                x += bw + rng.randint(5, 40)
-        else:
-            p.rect(-5, 640, W + 5, 800, (120, 180, 100), ol=None)
-            for x in range(0, W, 140):
-                p.ell(x + 40, 650, 140, 110, (80, 150, 80), ow=2)
+                if far:  # hazy: blend towards the sky, thin outline, small window dots
+                    c = tuple(int(v * 0.45 + s * 0.55) for v, s in zip(c, sky))
+                    p.rect(x, HORIZON - bh, x + bw, HORIZON, c, ol=tuple(int(v * 0.8) for v in c), ow=2)
+                    for wy in range(HORIZON - bh + 20, HORIZON - 25, 40):
+                        for wx in range(x + 16, x + bw - 22, 34):
+                            p.rect(wx, wy, wx + 14, wy + 18, tuple(min(255, v + 25) for v in c), ol=None)
+                else:
+                    p.rect(x, HORIZON - bh, x + bw, HORIZON, c)
+                    # windows stay inside the wall: last row ends at least 20px above the building's base
+                    wy = HORIZON - bh + 30
+                    while wy + 40 <= HORIZON - 20:
+                        for wx in range(x + 25, x + bw - 40, 60):
+                            lit = night and rng.random() < 0.4
+                            p.rect(wx, wy, wx + 34, wy + 40, (250, 230, 120) if lit else
+                                   ((60, 70, 90) if night else (210, 235, 250)), ow=2)
+                        wy += 70
+                x += bw + rng.randint(5, 40) + (40 if far else 0)
+        # road, kerb, pavement
+        p.rect(-5, HORIZON, W + 5, ROAD_END, road, ol=None)
+        p.line([(-5, HORIZON), (W + 5, HORIZON)], w=4)
+        for i in range(0, W, 160):
+            p.rect(i, 846, i + 80, 854, (240, 220, 80), ol=None)
+        p.rect(-5, ROAD_END, W + 5, ROAD_END + 12, tuple(min(255, v + 30) for v in pave))
+        p.rect(-5, ROAD_END + 12, W + 5, H + 5, pave, ol=None)
+        for i in range(0, W, 150):
+            p.line([(i, ROAD_END + 12), (i - 60, H + 5)], fill=tuple(int(v * 0.85) for v in pave), w=2)
+        p.line([(-5, 1000), (W + 5, 1000)], fill=tuple(int(v * 0.85) for v in pave), w=2)
         im = p.done(shadow=False, paper=False).convert("RGB")
-        if kind == "sepia":
+        if base == "sepia":
             im = Image.blend(im, Image.new("RGB", im.size, (180, 140, 90)), 0.25)
         return paperize(im, 0.12)
     if kind == "py_land":  # countryside with hills

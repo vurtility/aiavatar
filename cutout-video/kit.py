@@ -10,9 +10,11 @@ GROUND = 960
 class Actor:
     def __init__(self, img, x, y, t=None, anchor="bc", enter="pop", idle="bob", talk=(), out=None,
                  move=None, fall=None, swing=None, phase=0.0, spin=0.0, dur=0.32, blink=True, kind=None,
-                 ok=False, name=None):
+                 ok=False, name=None, id=None, target=None):
         """kind: char/label/bubble/stamp/prop (auto from art tags). ok=True: allowed to overlap others
-        (deliberate layering, e.g. ice over a vault, bars over a prisoner)."""
+        (deliberate layering, e.g. ice over a vault, bars over a prisoner).
+        id: handle other actors can point at. target: id of the thing this stamp/bubble/arrow is ABOUT
+        (a stamp must land on its target; a bubble's tail must face its speaker)."""
         self.v = img if isinstance(img, dict) else {"closed": img}
         self.x, self.y, self.t, self.anchor = x, y, t, anchor
         self.enter, self.idle, self.talk, self.out = enter, idle, talk, out
@@ -22,6 +24,7 @@ class Actor:
         first = next(iter(self.v.values()))
         self.kind = kind or first.info.get("kind", "prop")
         self.ok, self.name = ok, name or first.info.get("text", "") or first.info.get("what", "")
+        self.id, self.target = id, target
 
 
 class Scene:
@@ -29,9 +32,15 @@ class Scene:
         self.start, self.bgk, self.actors, self.zoom, self.part = start, bgk, actors, zoom, part
 
 
-def C(name, x, y=GROUND, t=None, talk=(), scale=1.15, flip=False, mouth="closed", eyes="normal", **kw):
+def C(name, x, y=GROUND, t=None, talk=(), scale=1.15, flip=False, mouth="closed", eyes="normal", vary=None,
+      **kw):
+    """vary=<int>: give a generic character (player, senator, extra) its own random head/face/hair/build.
+    Never use vary on real people - their look comes from art.CAST."""
     a = kw.pop("a", {})
+    if vary is not None:
+        kw = {**art.varied(vary), **kw}
     v = art.char_set(name, scale=scale, flip=flip, mouth=mouth, eyes=eyes, **kw)
+    a.setdefault("id", name)
     return Actor(v, x, y, t=t, talk=talk, phase=(x % 97) / 97.0, kind="char", name=name, **a)
 
 

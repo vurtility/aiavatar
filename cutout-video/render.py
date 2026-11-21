@@ -71,7 +71,7 @@ def actor_state(a, T, s0, fidx):
     if a.fall is not None and T > a.fall:
         k = ease((T - a.fall) / 0.6)
         rot += -88 * k
-        dy += 60 * k
+        dy -= 0.42 * next(iter(a.v.values())).width * k  # lying down: lift so the body rests on the ground
     if a.spin:
         t0, t1, r0, r1 = a.spin
         rot += r0 + (r1 - r0) * ease((T - t0) / (t1 - t0))
@@ -120,11 +120,12 @@ def render_frame(scene, nxt_start, T, fidx, bgs):
                 pass
         if abs(rot) > 0.05:
             if a.anchor == "bc" and a.fall is not None:
-                # rotate around feet
-                big = Image.new("RGBA", (img.width * 2, img.height * 2), (0, 0, 0, 0))
-                big.paste(img, (img.width // 2, 0), img)
-                img = big.rotate(rot, center=(img.width, img.height), resample=Image.BICUBIC)
-                place(frame, img, x, y + img.height / 2, "bc")
+                # rotate around the feet on a canvas big enough for the whole body in any direction
+                s_ = max(img.width, img.height)
+                big = Image.new("RGBA", (2 * s_, 2 * s_), (0, 0, 0, 0))
+                big.paste(img, (s_ - img.width // 2, s_ - img.height), img)
+                big = big.rotate(rot, center=(s_, s_), resample=Image.BICUBIC)
+                frame.paste(big, (int(x - s_), int(y - s_)), big)
                 continue
             img = img.rotate(rot, expand=a.swing is None, resample=Image.BICUBIC)
         place(frame, img, x, y, a.anchor)

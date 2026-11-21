@@ -6,6 +6,11 @@ set -euo pipefail
 cd "$(dirname "$0")"
 EP="$1"; MP3="$2"; OUT="$3"; WORK="${4:-work}"
 export EPISODE="$EP" WORKDIR="$WORK"
+# QA gates: automated check must be clean and every review sheet must be signed off
+python3 check.py >/dev/null  # (re-running with --sheets resets the review log: new sheets need a new review)
+grep -q "^\*\*0 errors" "$WORK/visual_report.md" || { echo "visual check has errors: $WORK/visual_report.md"; exit 1; }
+[ -f "$WORK/review_log.md" ] && ! grep -q "^- \[ \]" "$WORK/review_log.md" || {
+  echo "review sheets not all signed off: $WORK/review_log.md"; exit 1; }
 N=$(python3 -c "from kit import load_episode; print(int(load_episode().END*12))")
 J=${JOBS:-$(nproc)}; Q=$(( (N + J - 1) / J ))
 rm -f "$WORK"/chunk*.mp4 "$WORK"/list.txt

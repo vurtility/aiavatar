@@ -13,6 +13,10 @@ Automated checks (every scene, sampled whenever a new element has fully appeared
   CLUTTER     more than MAX_TEXT text elements on screen at once
   BALANCE     the scene's visual weight sits far off-centre
   READING     a caption is on screen too briefly for its word count
+  GROUND      on street backgrounds, standing things must stand on the near pavement (y >= 890)
+  DEPTH       a foreground building on a full street background (use the "<bg>_far" variant)
+  TARGET      a stamp with no target or not landing on it; a bubble with no speaker, speaker not on
+              screen, or tail pointing away from the speaker
 Writes WORKDIR/visual_report.md. With --sheets also writes WORKDIR/sheets/sheet_NN.png: the final
 frame of every scene captioned with its time and the narration, for the relevance/story review.
 """
@@ -164,6 +168,59 @@ def main():
                         gy = max(by0 - ay1, ay0 - by1)
                         if max(gx, gy) < GAP:
                             add("WARN", i, T, f"SPACING {desc(a)} and {desc(b)} only {max(gx, gy)}px apart")
+        # depth: a foreground building in front of same-size street buildings reads as pasted on
+        if sc.bgk in art.STREETS and sc.bgk not in ("washington",):
+            for a in sc.actors:
+                if a.name == "building":
+                    add("ERROR", i, sc.start, f"DEPTH foreground building on '{sc.bgk}': use '{sc.bgk}_far'")
+                    break
+        street = sc.bgk.removesuffix("_far") in art.STREETS
+        ids = {a.id: a for a in sc.actors if a.id}
+        for a in sc.actors:
+            if a.kind not in ("stamp", "bubble"):
+                continue
+            t_in = a.t if a.t is not None else sc.start
+            T = min(t_in + a.dur + 0.05, end - 0.06)
+            if not a.target:
+                add("ERROR", i, T, f"TARGET {desc(a)} has no target= (what is it about?)")
+                continue
+            tg = ids.get(a.target)
+            pa, pt = placed(a, T, sc.start), (placed(tg, T, sc.start) if tg else None)
+            if pt is None:
+                add("ERROR", i, T, f"TARGET {desc(a)} -> '{a.target}' is not on screen")
+                continue
+            if pa is None:
+                continue
+            if a.kind == "stamp":
+                ma, mt = frame_mask(pa), frame_mask(pt)
+                frac = (ma & mt).sum() / max(1, ma.sum())
+                if frac < 0.2:
+                    add("ERROR", i, T, f"TARGET {desc(a)} lands on the background, not on '{a.target}' "
+                                       f"({frac:.0%} on target)")
+            else:
+                tail = next(iter(a.v.values())).info.get("tail", "left")
+                bx = (pa["box"][0] + pa["box"][2]) / 2
+                sx = (pt["box"][0] + pt["box"][2]) / 2
+                if (sx < bx and tail != "left") or (sx > bx and tail != "right"):
+                    add("ERROR", i, T, f"TARGET {desc(a)}: tail points {tail} but '{a.target}' is on the "
+                                       f"{'left' if sx < bx else 'right'}")
+                if abs(sx - bx) > 950:
+                    add("WARN", i, T, f"TARGET {desc(a)} is far from its speaker '{a.target}'")
+        # ground: on streets, standing things stand on the near pavement
+        if street:
+            T = end - 0.06
+            for a in sc.actors:
+                if a.anchor != "bc" or a.kind not in ("char", "scenery", "prop") or a.name in ("gavel",):
+                    continue
+                p = placed(a, T, sc.start)
+                if p is None or p["moving"]:
+                    continue
+                if sc.bgk.startswith("washington") and a.name == "building":
+                    continue  # the Capitol sits on the far lawn by design
+                bottom = p["box"][3]
+                if bottom < 890:
+                    add("ERROR", i, T, f"GROUND {desc(a)} stands at y={bottom}, in the road/sky; "
+                                       f"stand it on the pavement (y>=890)")
         # balance at the final frame
         allm = None
         for a in sc.actors:
@@ -221,6 +278,17 @@ def main():
                 sheet.paste(t, ((j % 2) * 640, (j // 2) * 470))
             sheet.save(os.path.join(out, f"sheet_{s // 6:02d}.png"))
         print(f"sheets: {out}")
+        log = os.path.join(WORK, "review_log.md")
+        rows = ["# Sheet review log", "",
+                "Look at EVERY sheet. For each, check: elements match the narration and move the story on;",
+                "captions correct; characters consistent and recognisable; physically sensible (things stand",
+                "on the ground, near things bigger than far things, nothing floating or sunk); every stamp,",
+                "arrow and bubble clearly points at what it is about; balanced spacing.",
+                "Replace [ ] with [x] and a short note. make_video.sh refuses to render while any [ ] remains.", ""]
+        for s in range(0, len(tiles), 6):
+            rows.append(f"- [ ] sheet_{s // 6:02d}.png (scenes {s}-{min(s + 5, len(tiles) - 1)}): ")
+        open(log, "w").write("\n".join(rows) + "\n")
+        print(f"review log: {log}")
 
 
 if __name__ == "__main__":

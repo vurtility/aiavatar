@@ -55,19 +55,38 @@ blocked in cloud sessions.
   signature resting expression, e.g. Trump's `"pout"`). Exaggerate what viewers know them for, like a
   gentle caricature, and never mock. Write a one-line comment above each entry saying which traits it
   shows. Generic characters and crowds get a varied mix of builds and heights.
+- **Every face should look different, as in classic cutout cartoons.** Use `head` (round, oval, square,
+  egg, pear or bean), `head_h`/`head_w`, `eye_s`, `nose`, `ears` and the wider hairstyle set (spiky,
+  afro, mohawk, buzz, ponytail, receding, beanie, slick, etc.). Real people get the shape that matches
+  them. Generic characters (players, senators, extras, reporters) always use `C(..., vary=<unique int>)`;
+  crowds vary automatically. Never put two identical generic faces side by side.
+- **Depth and ground (street backgrounds):** buildings stand on the horizon (y=800). The road runs
+  800–900, and people and props stand on the near pavement (y≈960; feet at y≥890). A scene whose subject
+  is its own building uses the `<bg>_far` background (a hazy distant skyline), with that building
+  placed at y=1000 on the pavement. Never put a foreground building in front of full-size street buildings.
+- **Pointing things need targets:** give the thing an `id=` and give every stamp and speech bubble
+  `target=<id>`. A stamp must land on its target, never on empty background. A bubble's `tail` must
+  face its speaker. If a "stamp" is really a comment about something (e.g. "ALLEGATION – NOT
+  PROVEN"), make it a caption placed next to the thing, not over its text.
 
 ## 6. Visual check loop (repeat until clean)
 1. `EPISODE=episodes/<slug>.py WORKDIR=WORKDIR python3 check.py --sheets`
 2. Fix every **ERROR** in `WORKDIR/visual_report.md`: text overlapping anything, text off-frame, or text
    spilling out of a bubble. Fix **WARN**s unless they're deliberate (e.g. a desk running off the edge).
    Deliberate layering gets `ok=True`, and a group allowed to overlap each other gets `ok="<group>"`.
-3. Look at **every** `WORKDIR/sheets/sheet_NN.png`. Each tile shows a scene's final frame with its
+3. Look at **every** `WORKDIR/sheets/sheet_NN.png` and fill in `WORKDIR/review_log.md`, changing each
+   `[ ]` to `[x]` with a note on what you checked and fixed. `make_video.sh` refuses to render while
+   any sheet is unticked or the report has errors. Re-running `check.py --sheets` resets the log,
+   because new sheets need a new review. Each tile shows a scene's final frame with its
    narration underneath. Check that:
    - every element relates to what's being said and moves the story on, with nothing decorative or off-topic
    - captions are correct: names, numbers and spellings (brand casing such as "ueno")
    - characters are consistent: the same person keeps the same look, and nobody stands in for someone else
    - the layout is balanced and evenly spaced, with nothing crammed into a corner and no big empty half
    - allegations are labelled as allegations
+   - it makes physical sense: things stand on the ground, near things are bigger than far things,
+     nothing floats, sinks into the road or is cut off by the frame (falls and exits included)
+   - every stamp, arrow and bubble clearly points at what it's about
 4. Re-run until there are 0 errors and every warning remaining is deliberate.
 
 ## 7. Thumbnails (3 per video, for A/B testing)
