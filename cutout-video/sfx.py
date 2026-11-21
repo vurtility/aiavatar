@@ -37,15 +37,27 @@ def bandnoise(n, lo, hi):
     return y / (np.abs(y).max() + 1e-9)
 
 
-def gavel():
-    n = int(SR * 0.9)
+def knock(n, scale=1.0):
+    """Hardwood mallet striking a solid wooden table: a sharp click, a short ring of inharmonic
+    wood modes (dies away in tens of ms) and a dull low thud from the tabletop."""
     t = np.arange(n) / SR
-    knock = bandnoise(n, 300, 3500) * env(n, 0.0005, 0.018)
-    body = (np.sin(2 * np.pi * 180 * t) * 0.9 + np.sin(2 * np.pi * 410 * t) * 0.5 +
-            np.sin(2 * np.pi * 760 * t) * 0.3) * env(n, 0.0005, 0.09)
-    thump = np.sin(2 * np.pi * 75 * t) * env(n, 0.001, 0.12)
-    room = bandnoise(n, 200, 2000) * env(n, 0.01, 0.25) * 0.08
-    return (knock * 0.8 + body + thump * 0.8 + room) * 0.9
+    click = bandnoise(n, 2000, 9000) * env(n, 0.0002, 0.004) * 0.9
+    modes = sum(amp * np.sin(2 * np.pi * f * t + ph) * env(n, 0.0003, d)
+                for f, amp, d, ph in ((480, 1.0, 0.045, 0.0), (930, 0.7, 0.032, 1.1), (1620, 0.45, 0.022, 2.0),
+                                      (2480, 0.3, 0.015, 0.7), (3350, 0.18, 0.010, 1.7)))
+    table = np.sin(2 * np.pi * 115 * t) * env(n, 0.0005, 0.05) * 0.8
+    body = bandnoise(n, 150, 1400) * env(n, 0.0005, 0.02) * 0.5
+    return (click + modes + table + body) * scale
+
+
+def gavel():
+    n = int(SR * 0.7)
+    out = knock(n)
+    rb = int(SR * 0.085)  # the mallet's small rebound knock
+    out[rb:] += knock(n - rb, 0.28)
+    room = bandnoise(n, 300, 3000) * env(n, 0.004, 0.09) * 0.06
+    out = out + room
+    return out / np.abs(out).max() * 0.95
 
 
 def thud():

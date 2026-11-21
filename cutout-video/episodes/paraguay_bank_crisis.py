@@ -11,15 +11,18 @@ def build():
         P(art.desk(), W / 2, 1090, t=0.0, enter="none"),
         L("DOM TALKS POLITICS", W / 2, 130, t=0.6, size=84, rot=-2, bgc=(255, 230, 120)),
     ]))
-    S.append(Scene(3.8, "studio", [
-        C("dom", 520, 830, t=3.8, talk=dom_talk, scale=1.45, a={"enter": "none"}),
-        P(art.desk(""), 520, 1090, t=3.8, enter="none"),
-        P(art.flag_py(300, 190), 1280, 215, t=4.6, anchor="c", idle="sway"),
-        L("TODAY:", 1280, 385, t=4.2, size=60, rot=3, bgc=(255, 255, 255)),
-        L("PARAGUAY'S\nBANK CRISIS", 1280, 630, t=6.74, size=96, rot=-3, bgc=(255, 230, 120), enter="slam"),
-        P(art.sound_block(), 1600, 980, t=5.4, anchor="c", enter="pop"),
-        gavel_actor(1600, 950, 6.86),
-    ]))
+    # --- title card: words land on the beat, matching assets arrive, gavel closes it
+    S.append(Scene(3.8, "title", [
+        L("TODAY'S EPISODE", W / 2, 110, t=3.85, size=54, rot=-2, bgc=(255, 255, 255)),
+        L("PARAGUAY'S", W / 2, 270, t=5.14, size=118, rot=-3, bgc=(255, 252, 235), enter="slam"),
+        P(art.flag_py(420, 266), 330, 480, t=5.2, anchor="c", enter="slideL", idle="sway"),
+        L("BANK", W / 2, 475, t=5.92, size=128, rot=2, bgc=(255, 220, 90), enter="slam"),
+        P(art.building("bank", 480, 420, label="ueno"), 1680, 930, t=5.96, enter="slideR", out=6.18),
+        P(art.building("bank", 480, 420, label="ueno"), 1680, 930, t=6.18, enter="none", idle="shake"),
+        L("CRISIS", W / 2 - 60, 690, t=6.18, size=138, rot=-2, bgc=(225, 45, 45), fg=(255, 255, 255), enter="slam"),
+        P(art.sound_block(), 1230, 990, t=6.4, anchor="c", enter="pop"),
+        gavel_actor(1230, 960, 7.05),
+    ], zoom=0.05))
     # --- cold open
     S.append(Scene(7.75, "street", [
         P(art.vault(380, 380), 560, 1000, t=7.5),
@@ -74,7 +77,7 @@ def build():
     ]))
     S.append(Scene(57.9, "office_in", [
         C("exec", 520, GROUND, t=58.0, hold="briefcase"),
-        C("exec", 800, GROUND, t=58.2, glasses=True, col=(60, 40, 40)),
+        C("exec", 800, GROUND, t=58.2, glasses=True, col=(60, 40, 40), hair="receding", hair_col=(120, 120, 120), build=1.25),
         L("GRUPO VÁZQUEZ BUYS IT (2021)", 960, 150, t=58.4, size=62, rot=-2),
         L("ONE OF PARAGUAY'S BIGGEST\nBUSINESS CONGLOMERATES", 960, 320, t=60.5, size=44, rot=1, out=64.6,
           bgc=(255, 255, 255)),
@@ -376,7 +379,7 @@ def build():
     ]))
     S.append(Scene(438.3, "office_in", [
         P(art.newspaper("WARNINGS ABOUT\nTHE BANK IGNORED", "as reported by The Guardian"), 620, 800, t=438.4),
-        C("lawyer", 1400, GROUND, t=444.4, glasses=False, hold="magnifier", col=(30, 30, 40)),
+        C("regulator", 1400, GROUND, t=444.4, hold="magnifier", hair="receding", hair_col=(140, 140, 140), skin="tan", col=(30, 30, 40), build=1.15),
         L("PROSECUTORS NOW\nINVESTIGATING PEÑA", 1400, 300, t=444.6, size=52, rot=2, bgc=(255, 140, 120)),
     ]))
     # --- part 8
@@ -418,7 +421,7 @@ def build():
         C("pena", 760, GROUND, t=503.4, arms="point"),
         C("trump", 1160, GROUND, t=503.6, flip=True, arms="point", mouth="smile"),
     ]))
-    S.append(Scene(506.6, "chamber", [
+    S.append(Scene(506.6, "us_hall", [
         L("JAN 2025: TRUMP'S 2ND INAUGURATION", W / 2, 140, t=506.7, size=54, rot=-2),
         *[P(art.chair(), 300 + i * 260, GROUND, t=507.0 + i * 0.1) for i in range(5)],
         C("pena", 1650, GROUND, t=511.9, eyes="worried"),
@@ -522,7 +525,7 @@ def build():
     # --- outro
     S.append(Scene(641.1, "studio", [
         C("dom", 560, 830, t=641.1, talk=[(641.14, 660.0)], scale=1.45, a={"enter": "none"}),
-        P(art.desk(""), 560, 1090, t=641.1, enter="none"),
+        P(art.desk(), 560, 1090, t=641.1, enter="none"),
         L("HERE'S THE FOOTNOTE", 1350, 170, t=641.4, size=62, rot=2, bgc=(255, 230, 120)),
         P(art.phone(1.0, screen="locked"), 1350, 760, t=645.4, out=649.3),
         P(art.scales(), 1350, 860, t=649.4),
@@ -540,7 +543,7 @@ def build():
 END = 663.0
 # impacts for camera shake + matching sfx: (time, kind)
 SFX = [
-    (6.86, "gavel"), (8.25, "thud"), (13.25, "thud"), (20.6, "pop"), (35.5, "crash"),
+    (5.14, "pop"), (5.92, "pop"), (6.18, "thud"), (7.05, "gavel"), (8.25, "thud"), (13.25, "thud"), (20.6, "pop"), (35.5, "crash"),
     (79.45, "stamp"), (102.0, "cash"), (112.3, "gulp"), (124.0, "cash"), (206.25, "stamp"),
     (289.05, "stamp"), (294.75, "thud"), (336.6, "thud"), (371.45, "stamp"), (372.45, "stamp"),
     (395.4, "crowd"), (403.8, "crowd_short"), (414.4, "glass"), (478.4, "gavel"), (540.95, "thud"),

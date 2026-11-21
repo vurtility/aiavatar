@@ -130,6 +130,20 @@ blocked in cloud sessions.
 ## 10. YouTube upload
 _Not set up yet. It needs YouTube Data API access to the channel (OAuth)._
 
+## Standard opening (every episode)
+1. **Intro:** Dom at the studio desk, with "DTP" on the desk front and a "DOM TALKS POLITICS" banner.
+2. **Title card:** its own scene on the `title` background (dark spotlight with rays, wooden table along
+   the bottom). "TODAY'S EPISODE" sits at the top. Each title word slams in on the exact word timing
+   from the transcript, and key words get a colour (yellow for the subject, red for the bad news).
+   One or two assets that match the title slide in as their words are spoken (here the flag on
+   "Paraguay's" and the bank on "bank", which shakes on "crisis"). The scene ends with the gavel
+   swinging down on its block on the table, with the wooden mallet knock (`sfx.gavel`: hardwood click,
+   short wood ring, table thud and a small rebound). Keep the gavel clear of the title words.
+3. Then the cold open.
+
+The gavel is the channel's signature "verdict" sound. Reuse it for the title and for big votes or
+verdicts, and nowhere else, so it keeps its punch.
+
 ## House visual style
 - Construction-paper cutout look: flat colours, thin dark outlines, paper grain, soft drop shadows.
   Characters have wide round heads, big touching oval eyes with dot pupils, mitten hands and short legs.

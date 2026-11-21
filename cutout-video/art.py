@@ -1240,12 +1240,12 @@ def podium(txt=""):
     return p.done()
 
 
-def desk(txt="DOM TALKS POLITICS"):
+def desk(txt="DTP"):
     p = Pen(1100, 320)
     p.rect(20, 40, 1080, 310, (120, 70, 40), r=10)
     p.rect(20, 20, 1080, 60, (150, 95, 55), r=8)
     p.rect(220, 110, 880, 250, (250, 240, 215), r=8)
-    p.text(550, 182, txt, 64, fill=(200, 40, 45))
+    p.text(550, 182, txt, 64 if len(txt) > 4 else 96, fill=(200, 40, 45))
     return p.done()
 
 
@@ -1354,7 +1354,8 @@ def _bg_base(sky, ground, horizon=780):
 HORIZON, ROAD_END = 800, 900
 # parts of a background that captions must not cover (boxes in frame pixels)
 FLAG_BOX = (70, 60, 330, 216)
-BG_ZONES = {"chamber": [("flag", FLAG_BOX)], "senate": [("flag", FLAG_BOX)], "court": [("flag", FLAG_BOX)]}  # street geometry: building bases / near kerb
+BG_ZONES = {"chamber": [("flag", FLAG_BOX)], "senate": [("flag", FLAG_BOX)], "court": [("flag", FLAG_BOX)],
+            "us_hall": [("flag", FLAG_BOX)]}  # street geometry: building bases / near kerb
 STREETS = {"street", "night", "street_py", "washington", "wallst", "dusk", "sepia"}
 
 
@@ -1458,14 +1459,22 @@ def bg(kind):
         for i in range(0, W, 90):
             p.arc(i, 60 + (i % 180), 60, 20, 200, 340, fill=(150, 200, 235), wd=3)
         return paperize(p.done(shadow=False, paper=False).convert("RGB"), 0.12)
-    if kind in ("chamber", "senate", "court"):
+    if kind in ("chamber", "senate", "court", "us_hall"):
         p = Pen(W, H)
-        wall = {"chamber": (170, 120, 90), "senate": (120, 50, 60), "court": (130, 100, 70)}[kind]
+        wall = {"chamber": (170, 120, 90), "senate": (120, 50, 60), "court": (130, 100, 70),
+                "us_hall": (200, 190, 165)}[kind]
         p.rect(-5, -5, W + 5, H + 5, wall, ol=None)
         for i in range(0, W, 160):
             p.rect(i + 20, 60, i + 120, 640, tuple(min(255, c + 20) for c in wall), ow=2)
         p.rect(-5, 640, W + 5, H + 5, (110, 70, 45), ol=None)
         p.line([(-5, 640), (W + 5, 640)], w=4)
+        if kind == "us_hall":  # Washington interior: US flag on the pole
+            fx0, fy0, fx1, fy1 = FLAG_BOX
+            p.rect(fx0 - 22, fy0 - 10, fx0 - 12, 640, (190, 160, 70))
+            im_ = paperize(p.done(shadow=False, paper=False).convert("RGB"), 0.12).convert("RGBA")
+            fl = flag_us(int(fx1 - fx0), int(fy1 - fy0))
+            im_.alpha_composite(fl, (int(fx0), int(fy0)))
+            return im_.convert("RGB")
         fx0, fy0, fx1, fy1 = FLAG_BOX  # flag on a pole in the top-left corner, clear of titles
         fh = (fy1 - fy0) / 3
         p.rect(fx0 - 22, fy0 - 10, fx0 - 12, 640, (190, 160, 70))
@@ -1494,6 +1503,17 @@ def bg(kind):
             p.rect(1400, 140, 1760, 460, (180, 220, 245), ow=6)
             p.rect(160, 160, 420, 400, (250, 245, 230), ow=4)
             p.line([(180, 360), (240, 300), (300, 330), (400, 200)], fill=(20, 150, 125), w=8)
+        return paperize(p.done(shadow=False, paper=False).convert("RGB"), 0.12)
+    if kind == "title":  # dark spotlight with rays: used for every episode's title card
+        p = Pen(W, H)
+        p.rect(-5, -5, W + 5, H + 5, (28, 34, 70), ol=None)
+        for i in range(0, 24, 2):
+            a0, a1 = i * math.pi / 12, (i + 1) * math.pi / 12
+            p.poly([(W / 2, H / 2), (W / 2 + 2200 * math.cos(a0), H / 2 + 2200 * math.sin(a0)),
+                    (W / 2 + 2200 * math.cos(a1), H / 2 + 2200 * math.sin(a1))], (40, 50, 100), ol=None)
+        p.ell(W / 2, H / 2, 1100, 760, (52, 66, 128), ol=None)
+        p.rect(-5, 930, W + 5, H + 5, (60, 40, 28), ol=None)  # the hard table the gavel lands on
+        p.rect(-5, 920, W + 5, 940, (95, 62, 40), ol=None)
         return paperize(p.done(shadow=False, paper=False).convert("RGB"), 0.12)
     if kind in ("paper_red", "paper_blue", "paper_green", "paper_yellow", "paper_purple", "cork"):
         c = {"paper_red": (200, 70, 60), "paper_blue": (70, 110, 180), "paper_green": (80, 150, 100),
