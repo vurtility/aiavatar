@@ -16,11 +16,22 @@ Stop at the **[CHECKPOINT]** steps and get the user's OK before moving on.
 blocked in cloud sessions.
 
 ## 1. Script
-- Read `cutout-video/SCRIPT_STYLE.md` first and follow it: explain it like talking to a friend, use the
-  why-it-matters / pause-and-break-it-down / misconception / story-link devices, and end on the footnote close.
-- Research the topic properly and cite sources for every claim. Present allegations as allegations.
-- Save as `cutout-video/scripts/<slug>.txt`, with one paragraph per beat and `PART N – Title` lines for part cards.
-- **[CHECKPOINT]** The user reviews the script.
+- **Pick the topic.** US politics first. Alternate **trending** stories (published within 24–48h of the
+  news) with **evergreen** explainers built around questions people search for. Every trending script
+  must also teach one evergreen concept, so it keeps earning after the news moves on.
+- **Research** the topic properly, using at least 3 reputable sources, newest first. Note what's
+  confirmed, what's alleged and what's denied, and get each side's response.
+- **Write it** following `cutout-video/SCRIPT_STYLE.md`:
+  - a paradox hook in the first 15 seconds and a promise by 30 seconds
+  - "why it matters" at least 3 times, "let's break this down" at least twice
+  - at least one misconception call-out, a recap at the end of each part, and story links between parts
+  - a caveat, the footnote close and a next-video handoff
+  - fair to both sides; 8–12 minutes (1,300–1,900 words); short sentences; quotes of 25 words or fewer,
+    written as `QUOTE (Name): "…"`
+- Save it as `cutout-video/scripts/<slug>.txt` in the file format from the style guide.
+- **Gate:** `python3 script_check.py scripts/<slug>.txt` must print PASS. Then reread the whole script as
+  a sceptical viewer from the *other* political side. If it would feel like a hit piece to them, fix it.
+  Then check every number and quote against the sources.
 
 ## 2. Pronunciation (before recording)
 - `python3 pronounce.py prep scripts/<slug>.txt WORKDIR`
