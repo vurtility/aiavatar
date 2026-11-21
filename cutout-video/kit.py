@@ -38,7 +38,14 @@ def C(name, x, y=GROUND, t=None, talk=(), scale=1.15, flip=False, mouth="closed"
     Never use vary on real people - their look comes from art.CAST."""
     a = kw.pop("a", {})
     if vary is not None:
-        kw = {**art.varied(vary), **kw}
+        v = art.varied(vary)
+        base = art.CAST[name]
+        outfit = base.get("outfit")
+        if "hat" in base or outfit in ("suit", "longtie", "uniform", "dress"):
+            v.pop("hat", None)  # uniforms keep their own headgear; suits and dresses go bare-headed
+        elif outfit == "jersey" and v.get("hat") not in (None, "headband"):
+            v["hat"] = None     # sportswear: a sweatband at most
+        kw = {**v, **kw}
     v = art.char_set(name, scale=scale, flip=flip, mouth=mouth, eyes=eyes, **kw)
     a.setdefault("id", name)
     return Actor(v, x, y, t=t, talk=talk, phase=(x % 97) / 97.0, kind="char", name=name, **a)

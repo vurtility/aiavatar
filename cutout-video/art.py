@@ -44,19 +44,22 @@ def paperize(img, strength=0.10):
 class Pen:
     """Draws at K-times resolution with coordinates given at 1x."""
 
-    def __init__(self, w, h):
-        self.w, self.h = w, h
-        self.im = Image.new("RGBA", (w * K, h * K), (0, 0, 0, 0))
+    def __init__(self, w, h, oy=0):
+        """oy: extra headroom added above the drawing (all y coordinates shift down by oy)."""
+        self.w, self.h, self.oy = w, h + oy, oy
+        self.im = Image.new("RGBA", (w * K, (h + oy) * K), (0, 0, 0, 0))
         self.d = ImageDraw.Draw(self.im)
 
     def _p(self, pts):
-        return [(x * K, y * K) for x, y in pts]
+        return [(x * K, (y + self.oy) * K) for x, y in pts]
 
     def ell(self, cx, cy, w, h, fill, ol=INK, ow=OUT):
+        cy = cy + self.oy
         self.d.ellipse([(cx - w / 2) * K, (cy - h / 2) * K, (cx + w / 2) * K, (cy + h / 2) * K],
                        fill=fill, outline=ol, width=int(ow * K) if ol else 0)
 
     def rect(self, x0, y0, x1, y1, fill, ol=INK, ow=OUT, r=0):
+        y0, y1 = y0 + self.oy, y1 + self.oy
         box = [x0 * K, y0 * K, x1 * K, y1 * K]
         if r:
             self.d.rounded_rectangle(box, r * K, fill=fill, outline=ol, width=int(ow * K) if ol else 0)
@@ -70,18 +73,22 @@ class Pen:
         self.d.line(self._p(pts), fill=fill, width=int(w * K), joint="curve")
 
     def arc(self, cx, cy, w, h, a0, a1, fill=INK, wd=OUT):
+        cy = cy + self.oy
         self.d.arc([(cx - w / 2) * K, (cy - h / 2) * K, (cx + w / 2) * K, (cy + h / 2) * K], a0, a1,
                    fill=fill, width=int(wd * K))
 
     def chord(self, cx, cy, w, h, a0, a1, fill, ol=INK, ow=OUT):
+        cy = cy + self.oy
         self.d.chord([(cx - w / 2) * K, (cy - h / 2) * K, (cx + w / 2) * K, (cy + h / 2) * K], a0, a1,
                      fill=fill, outline=ol, width=int(ow * K) if ol else 0)
 
     def pie(self, cx, cy, w, h, a0, a1, fill, ol=INK, ow=OUT):
+        cy = cy + self.oy
         self.d.pieslice([(cx - w / 2) * K, (cy - h / 2) * K, (cx + w / 2) * K, (cy + h / 2) * K], a0, a1,
                         fill=fill, outline=ol, width=int(ow * K) if ol else 0)
 
     def text(self, cx, cy, s, size, fill=INK, kind="title", anchor="mm", stroke=0, stroke_fill=None):
+        cy = cy + self.oy
         self.d.text((cx * K, cy * K), s, font=font(kind, int(size * K)), fill=fill, anchor=anchor,
                     stroke_width=int(stroke * K), stroke_fill=stroke_fill)
 
@@ -144,16 +151,17 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
            beard=False, hat=None, shirt=(240, 240, 240), pants=(50, 50, 60), arms="down", hold=None,
            scale=1.0, flip=False, old=False, look=0, build=1.0, height=1.0, head_w=1.0, brows=None,
            pin=None, cross=False, jowls=False, tie_w=1.0, head="round", head_h=1.0, eye_s=1.0,
-           nose=None, ears=False):
+           nose=None, ears=False, hat_col=None):
     """Cutout character.
     build: body width (0.8 thin, 1.0 average, 1.2 stocky, 1.4 heavy - heavy also gets a belly)
     height: overall size multiplier; head_w: head width multiplier
     brows: None/'thick'/'grey'; pin: lapel pin ('us'/'py'); cross: pendant; jowls: rounder lower face
     tie_w: tie width multiplier (Trump's tie is wide and extra long via outfit='longtie')
     head: round/oval/square/egg/pear/bean outline; head_h: head height multiplier (chin stays put)
-    eye_s: eye size (0.75 small .. 1.2 big); nose: None/'dot'/'button'/'long'/'wide'; ears: draw ears"""
+    eye_s: eye size (0.75 small .. 1.2 big); nose: None/'dot'/'button'/'long'/'wide'; ears: draw ears
+    hat: police/cap/helmet/bobble/earflap/hood/bucket/headband/beret/clip; hat_col: its colour"""
     w, h = 300, 430
-    p = Pen(w, h)
+    p = Pen(w, h, oy=TOP)
     sk = SKIN.get(skin, skin) if isinstance(skin, str) else skin
     cx = 150
     b = build
@@ -237,13 +245,17 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
         p.ell(bl + 2, 344, 30, 30, sk)
         p.ell(br - 2, 344, 30, 30, sk)
     # ---- head on its own layer so it can be widened/narrowed per person
-    q = Pen(w, h)
+    q = Pen(w, h, oy=TOP)
     hy = 138
     if hair in ("long", "bun"):
         q.ell(cx, hy + 10, 236, 210, hair_col)
     if ears:
         q.ell(cx - 112, hy + 6, 34, 50, sk)
         q.ell(cx + 112, hy + 6, 34, 50, sk)
+    hcol = hat_col or (200, 60, 60)
+    dark = tuple(int(v * 0.75) for v in hcol)
+    if hat == "hood":
+        q.ell(cx, hy - 4, 262, 236, hcol)
     head_outline(q, head, cx, hy, sk)
     if jowls:
         q.chord(cx, hy + 34, 214, 150, 0, 180, sk, ol=None)
@@ -305,6 +317,34 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
         q.chord(cx, hy - 34, 232, 190, 180, 360, col if isinstance(col, tuple) else (200, 60, 60))
         q.rect(cx - 116, hy - 46, cx + 116, hy - 22, tuple(int(v * 0.8) for v in col), r=8)
         q.ell(cx, hy - 132, 36, 36, (240, 240, 240))
+    elif hair == "messy":  # jagged, uncombed tufts
+        q.chord(cx, hy - 24, 228, 160, 180, 360, hc)
+        for i in range(9):
+            x = cx - 112 + i * 28
+            q.poly([(x - 14, hy - 62 + abs(i - 4) * 6), (x + 6 + (i % 2) * 8, hy - 118 + abs(i - 4) * 9),
+                    (x + 18, hy - 62 + abs(i - 4) * 6)], hc)
+        q.poly([(cx - 116, hy - 30), (cx - 134, hy - 4), (cx - 104, hy - 14)], hc)
+        q.poly([(cx + 116, hy - 30), (cx + 136, hy - 2), (cx + 104, hy - 14)], hc)
+    elif hair == "bob":  # straight bob framing the face
+        q.chord(cx, hy - 16, 236, 176, 180, 360, hc)
+        q.rect(cx - 120, hy - 20, cx - 92, hy + 50, hc, r=10)
+        q.rect(cx + 92, hy - 20, cx + 120, hy + 50, hc, r=10)
+    elif hair == "pigtails":
+        q.chord(cx, hy - 20, 228, 160, 180, 360, hc)
+        q.ell(cx - 126, hy + 10, 44, 70, hc)
+        q.ell(cx + 126, hy + 10, 44, 70, hc)
+        q.ell(cx - 112, hy - 18, 16, 16, (90, 200, 120))
+        q.ell(cx + 112, hy - 18, 16, 16, (90, 200, 120))
+    elif hair == "bangs":  # straight fringe
+        q.chord(cx, hy - 18, 230, 168, 180, 360, hc)
+        q.rect(cx - 96, hy - 82, cx + 96, hy - 44, hc, ol=None)
+        q.line([(cx - 96, hy - 44), (cx + 96, hy - 44)], w=OUT)
+    elif hair == "mop":  # long shaggy mop over the ears
+        q.chord(cx, hy - 14, 240, 188, 180, 360, hc)
+        for i in range(8):
+            x = cx - 105 + i * 30
+            q.ell(x, hy - 40 + (0 if 1 < i < 6 else 26), 44, 40, hc, ol=None)
+        q.arc(cx, hy - 14, 240, 188, 180, 360, wd=OUT)
     elif hair == "curly":
         for i in range(9):
             a = math.pi + i * math.pi / 8
@@ -372,14 +412,42 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
         q.rect(cx - 104, hy - 70, cx + 104, hy - 56, (20, 20, 25))
         q.ell(cx, hy - 92, 22, 22, (230, 200, 60))
     elif hat == "cap":
-        q.chord(cx, hy - 60, 200, 120, 180, 360, col)
-        q.poly([(cx + 40, hy - 64), (cx + 140, hy - 60), (cx + 120, hy - 50), (cx + 40, hy - 52)], col)
+        q.chord(cx, hy - 44, 230, 150, 180, 360, hcol)
+        q.poly([(cx + 30, hy - 50), (cx + 160, hy - 46), (cx + 140, hy - 30), (cx + 30, hy - 34)], dark)
+    elif hat == "bobble":  # striped knitted beanie with a pom-pom
+        q.chord(cx, hy - 30, 236, 196, 180, 360, hcol)
+        for k_ in range(2):
+            q.chord(cx, hy - 30, 236 - 40 * k_ - 40, 196 - 40 * k_ - 40, 180, 360, None, ol=dark, ow=6)
+        q.rect(cx - 120, hy - 46, cx + 120, hy - 18, dark, r=10)
+        q.ell(cx, hy - 132, 44, 44, (245, 245, 245) if sum(hcol) < 600 else (220, 60, 60))
+    elif hat == "earflap":  # trapper hat with flaps down
+        q.chord(cx, hy - 28, 236, 190, 180, 360, hcol)
+        q.rect(cx - 126, hy - 40, cx - 96, hy + 52, hcol, r=14)
+        q.rect(cx + 96, hy - 40, cx + 126, hy + 52, hcol, r=14)
+        q.rect(cx - 118, hy - 54, cx + 118, hy - 30, dark, r=10)
+    elif hat == "hood":  # opening of the hood around the face
+        q.arc(cx, hy + 4, 236, 214, 0, 360, fill=dark, wd=8)
+        q.line([(cx - 10, hy + 108), (cx - 16, hy + 150)], fill=dark, w=4)
+        q.line([(cx + 10, hy + 108), (cx + 16, hy + 150)], fill=dark, w=4)
+    elif hat == "bucket":
+        q.poly([(cx - 90, hy - 120), (cx + 90, hy - 120), (cx + 104, hy - 56), (cx - 104, hy - 56)], hcol)
+        q.ell(cx, hy - 52, 280, 40, hcol)
+    elif hat == "headband":
+        q.rect(cx - 114, hy - 66, cx + 114, hy - 44, hcol, r=10)
+    elif hat == "beret":
+        q.ell(cx - 20, hy - 92, 220, 70, hcol)
+        q.ell(cx - 10, hy - 126, 16, 22, dark, ol=None)
+    elif hat == "clip":  # flower hair clip
+        for k_ in range(5):
+            ang = k_ * 2 * math.pi / 5
+            q.ell(cx + 70 + 14 * math.cos(ang), hy - 70 + 14 * math.sin(ang), 18, 18, hcol)
+        q.ell(cx + 70, hy - 70, 12, 12, (250, 220, 80))
     elif hat == "helmet":
         q.chord(cx, hy - 50, 220, 150, 180, 360, (40, 50, 70))
         q.rect(cx - 70, hy - 66, cx + 70, hy - 30, (150, 200, 230), ow=2)
     head = q.im
     if abs(head_h - 1) > 1e-3:  # stretch/squash vertically about the chin (y=236)
-        chin = 236 * K
+        chin = (236 + TOP) * K
         top = head.crop((0, 0, head.width, chin))
         nh = int(chin * head_h)
         top = top.resize((head.width, nh), Image.LANCZOS)
@@ -398,7 +466,7 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
     p.im.alpha_composite(head)
     im = p.done()
     if hold:
-        im = add_hold(im, hold)
+        im = add_hold(im, hold, TOP)
     if flip:
         im = im.transpose(Image.FLIP_LEFT_RIGHT)
     s = scale * height
@@ -407,43 +475,46 @@ def person(skin="light", hair="short", hair_col=(70, 45, 30), outfit="suit", col
     return im
 
 
-def add_hold(im, what):
+TOP = 80  # headroom above every character for tall hair and hats
+
+
+def add_hold(im, what, top=0):
     """Put a prop in front of the character's hands."""
     if what == "phone":
         pr = phone(scale=0.32)
-        im.alpha_composite(pr, (150 - pr.width // 2 + 40, 250))
+        im.alpha_composite(pr, (150 - pr.width // 2 + 40, top + 250))
     elif what == "mic":
         p = Pen(80, 140)
         p.rect(34, 50, 46, 130, (60, 60, 60))
         p.ell(40, 40, 46, 56, (90, 90, 90))
         pr = p.done(shadow=False)
-        im.alpha_composite(pr, (180, 220))
+        im.alpha_composite(pr, (180, top + 220))
     elif what == "briefcase":
         p = Pen(120, 100)
         p.rect(10, 25, 110, 95, (120, 70, 30), r=8)
         p.rect(40, 8, 80, 28, None)
         pr = p.done(shadow=False)
-        im.alpha_composite(pr, (175, 290))
+        im.alpha_composite(pr, (175, top + 290))
     elif what == "cane":
         p = Pen(60, 200)
         p.line([(30, 30), (30, 195)], fill=(110, 70, 30), w=8)
         p.arc(16, 30, 30, 30, 180, 360, fill=(110, 70, 30), wd=8)
         pr = p.done(shadow=False)
-        im.alpha_composite(pr, (190, 220))
+        im.alpha_composite(pr, (190, top + 220))
     elif what == "magnifier":
         p = Pen(140, 160)
         p.line([(80, 80), (130, 150)], fill=(110, 70, 30), w=14)
         p.ell(55, 55, 90, 90, (200, 235, 255), ow=6)
         pr = p.done(shadow=False)
-        im.alpha_composite(pr, (175, 160))
+        im.alpha_composite(pr, (175, top + 160))
     elif isinstance(what, tuple) and what[0] == "sign":
         pr = sign_board(what[1], what[2] if len(what) > 2 else (255, 250, 230))
-        im.alpha_composite(pr, (150 - pr.width // 2, 40))
+        im.alpha_composite(pr, (150 - pr.width // 2, top + 40))
         p = Pen(20, 200)
         p.rect(5, 0, 15, 200, (140, 100, 60), ow=2)
         st = p.done(shadow=False)
         # stick behind sign? put in front of hands
-        im.alpha_composite(st, (140, 40 + pr.height - 10))
+        im.alpha_composite(st, (140, top + 40 + pr.height - 10))
     return im
 
 
@@ -466,25 +537,24 @@ CAST = {
     "dom": dict(skin="light", hair="short", hair_col=(95, 60, 35), outfit="shirt", col=(60, 120, 190)),
     # Santiago Pena: 47, solid build, round face, short dark side-parted hair, presidential sash
     "pena": dict(skin="tan", hair="side", hair_col=(35, 28, 25), outfit="suit", col=(35, 45, 80),
-                 tie=(40, 70, 160), sash=True, build=1.15, head_w=1.06, pin="py", head="round", nose="wide"),
+                 tie=(40, 70, 160), sash=True, build=1.15, head_w=1.06, pin="py", head="round"),
     "pena_nosash": dict(skin="tan", hair="side", hair_col=(35, 28, 25), outfit="suit", col=(35, 45, 80),
-                        tie=(40, 70, 160), build=1.15, head_w=1.06, head="round", nose="wide"),
+                        tie=(40, 70, 160), build=1.15, head_w=1.06, head="round"),
     # Trump: big frame, blond swept comb-over, orange tan, long wide red tie, flag pin, pursed mouth
     "trump": dict(skin="orange", hair="swoop", hair_col=(242, 206, 110), outfit="longtie", col=(28, 36, 70),
-                  tie=(215, 25, 35), tie_w=1.5, build=1.42, height=1.08, head_w=1.1, jowls=True,
-                  pin="us", brows="thick", rest="pout", head="pear", eye_s=0.85,
-                  nose="button"),
+                  tie=(215, 25, 35), tie_w=1.5, build=1.42, height=1.08, head_w=1.12, jowls=True,
+                  pin="us", brows="thick", rest="pout", head="round"),
     # Horacio Cartes: older, heavy-set, bald with grey sides, businessman's grey suit
     "cartes": dict(skin="light", hair="bald", hair_col=(190, 190, 190), outfit="suit", col=(80, 80, 85),
-                   tie=(200, 40, 40), old=True, build=1.38, head_w=1.08, jowls=True, brows="grey", head="bean",
-                   ears=True, nose="wide", eye_s=0.9),
+                   tie=(200, 40, 40), old=True, build=1.38, head_w=1.08, jowls=True, brows="grey", head="round",
+                   head_h=0.96),
     # Marco Rubio: slim, youthful, short dark hair, thick dark eyebrows
     "rubio": dict(skin="tan", hair="short", hair_col=(40, 30, 25), outfit="suit", col=(40, 45, 60),
-                  tie=(60, 90, 170), build=0.92, brows="thick", pin="us", head="oval", head_h=1.08),
+                  tie=(60, 90, 170), build=0.92, brows="thick", pin="us", head="round", head_h=1.05, head_w=0.95),
     # Scott Bessent: tall and lean, neat silver hair swept back
     "bessent": dict(skin="light", hair="slick", hair_col=(205, 205, 210), outfit="suit", col=(40, 45, 60),
-                    tie=(140, 40, 60), build=0.85, height=1.06, head_w=0.9, pin="us", head="oval",
-                    head_h=1.14, nose="long", eye_s=0.85),
+                    tie=(140, 40, 60), build=0.85, height=1.06, head_w=0.95, pin="us", head="round",
+                    head_h=1.06),
     "cbchief": dict(skin="light", hair="side", hair_col=(120, 120, 120), outfit="suit", col=(90, 95, 105),
                     tie=(40, 120, 90), glasses=True, build=0.95),
     "newchief": dict(skin="tan", hair="short", hair_col=(50, 40, 30), outfit="suit", col=(70, 60, 90),
@@ -501,11 +571,10 @@ CAST = {
                    tie=(120, 30, 30), glasses=True, build=0.9),
     # Pedro Alliana: heavier build, dark hair, thick moustache
     "alliana": dict(skin="tan", hair="short", hair_col=(30, 25, 20), outfit="suit", col=(50, 70, 50),
-                    tie=(200, 40, 40), mustache=True, build=1.3, head_w=1.05, brows="thick", head="square",
-                    nose="wide"),
+                    tie=(200, 40, 40), mustache=True, build=1.3, head_w=1.05, brows="thick", head="round"),
     # Fernando Lugo: former Catholic bishop - lean, white beard, bald crown, open shirt, small cross
     "lugo": dict(skin="tan", hair="bald", hair_col=(225, 225, 225), outfit="shirt", col=(150, 130, 100),
-                 beard=True, cross=True, build=0.88, head="egg", head_h=1.1, ears=True, nose="long"),
+                 beard=True, cross=True, build=0.88, head="round", head_h=1.04),
     "cop": dict(skin="tan", hair="short", outfit="uniform", col=(40, 60, 110), hat="police",
                 pants=(30, 40, 80), build=1.1),
     "riot": dict(skin="tan", hair="short", outfit="uniform", col=(35, 40, 55), hat="helmet",
@@ -520,16 +589,22 @@ CAST = {
                    old=True, glasses=True, build=1.05, height=0.92),
 }
 
-HEADS = ["round", "oval", "square", "egg", "pear", "bean"]
+HEADS = ["round"]  # house style: every head is a circle; variety comes from hair, hats, size and colour
+HATS = [None, None, None, "bobble", "earflap", "hood", "cap", "bucket", "headband", "beret", "clip"]
+HAIRS = ["short", "side", "slick", "spiky", "messy", "curly", "afro", "bob", "pigtails", "bangs", "mop",
+         "ponytail", "bun", "long", "receding", "bald", "buzz", "mohawk"]
+HAT_COLS = [(220, 60, 60), (60, 120, 200), (70, 170, 90), (240, 190, 60), (150, 80, 170), (240, 130, 40),
+            (230, 120, 170), (60, 170, 170), (90, 90, 100)]
 
 
 def varied(seed, **kw):
     """Look-variety for generic characters (players, senators, extras) - same random pool as crowds."""
     rng = random.Random(seed * 104729)
-    d = dict(head=rng.choice(HEADS), head_h=rng.choice([0.92, 1.0, 1.08, 1.14]),
-             head_w=rng.choice([0.9, 0.96, 1.0, 1.06]), eye_s=rng.choice([0.8, 0.9, 1.0, 1.12]),
-             nose=rng.choice([None, "dot", "button", "long", "wide"]), ears=rng.random() < 0.3,
-             hair=rng.choice(["short", "curly", "side", "spiky", "buzz", "receding", "afro", "slick"]),
+    d = dict(head="round", head_h=rng.choice([0.96, 1.0, 1.04]), head_w=rng.choice([0.96, 1.0, 1.05]),
+             eye_s=rng.choice([0.95, 1.0, 1.05]), hat=rng.choice(HATS[:3] + ["cap", "headband", "beret"]),
+             hat_col=rng.choice(HAT_COLS),
+             hair=rng.choice(["short", "curly", "side", "spiky", "messy", "buzz", "receding", "afro", "slick",
+                              "mop", "bangs"]),
              hair_col=rng.choice([(40, 30, 20), (90, 55, 25), (20, 20, 20), (180, 130, 60), (130, 80, 40)]),
              build=rng.choice([0.85, 0.95, 1.0, 1.1, 1.25]))
     d.update(kw)
@@ -568,17 +643,14 @@ def char_set(name, scale=1.0, flip=False, mouth="closed", eyes="normal", **kw):
 @functools.lru_cache(None)
 def crowd_person(i, scale=0.6, mouth="closed", eyes="normal", hold=None, flip=False, arms="down"):
     rng = random.Random(i * 7919)
-    return person(skin=rng.choice(CROWD_SKIN), hair=rng.choice(["short", "long", "curly", "side", "bun", "bald", "spiky",
-                                                                "afro", "mohawk", "buzz", "ponytail", "receding",
-                                                                "beanie"]),
-                  head=rng.choice(HEADS), head_h=rng.choice([0.92, 1.0, 1.0, 1.08, 1.14]),
-                  eye_s=rng.choice([0.8, 0.9, 1.0, 1.0, 1.12]), nose=rng.choice([None, None, "dot", "button", "long", "wide"]),
-                  ears=rng.random() < 0.3,
+    return person(skin=rng.choice(CROWD_SKIN), hair=rng.choice(HAIRS), hat=rng.choice(HATS),
+                  hat_col=rng.choice(HAT_COLS), head="round", head_h=rng.choice([0.96, 1.0, 1.04]),
+                  eye_s=rng.choice([0.95, 1.0, 1.0, 1.05]),
                   hair_col=rng.choice(CROWD_HAIR), outfit="shirt", col=rng.choice(CROWD_COLS),
                   mouth=mouth, eyes=eyes, scale=scale, hold=hold, flip=flip, arms=arms,
                   glasses=rng.random() < 0.2, pants=rng.choice([(50, 50, 60), (40, 60, 120), (90, 70, 50)]),
                   build=rng.choice([0.85, 0.95, 1.0, 1.1, 1.25, 1.4]), height=rng.choice([0.92, 1.0, 1.0, 1.06]),
-                  head_w=rng.choice([0.9, 0.96, 1.0, 1.04, 1.1]))
+                  head_w=rng.choice([0.96, 1.0, 1.04, 1.08]))
 
 
 # ----------------------------------------------------------------------------- props

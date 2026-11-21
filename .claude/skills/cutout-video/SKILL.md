@@ -55,11 +55,16 @@ blocked in cloud sessions.
   signature resting expression, e.g. Trump's `"pout"`). Exaggerate what viewers know them for, like a
   gentle caricature, and never mock. Write a one-line comment above each entry saying which traits it
   shows. Generic characters and crowds get a varied mix of builds and heights.
-- **Every face should look different, as in classic cutout cartoons.** Use `head` (round, oval, square,
-  egg, pear or bean), `head_h`/`head_w`, `eye_s`, `nose`, `ears` and the wider hairstyle set (spiky,
-  afro, mohawk, buzz, ponytail, receding, beanie, slick, etc.). Real people get the shape that matches
-  them. Generic characters (players, senators, extras, reporters) always use `C(..., vary=<unique int>)`;
-  crowds vary automatically. Never put two identical generic faces side by side.
+- **Every head is a circle; the variety comes from hair and hats.** Keep `head="round"`, with at most a
+  gentle `head_h`/`head_w` stretch (0.95–1.12). Use the same big eyes on everyone and no noses. Make
+  people different with hairstyles (short, side, slick, spiky, messy, curly, afro, bob, pigtails, bangs,
+  mop, ponytail, bun, long, receding, bald, buzz, mohawk, swoop) and hats in many colours (bobble
+  beanie, earflap hat, hood, cap, bucket hat, headband, beret, hair clip), plus skin, build, height and
+  clothes. Hats suit the person: casual clothes can wear anything, sportswear gets a headband at most,
+  suits and dresses go bare-headed, and uniforms keep their own headgear (`kit.C` enforces this).
+  Generic characters always use `C(..., vary=<unique int>)`; crowds vary automatically. All designs
+  stay original: take the general flat-cutout look, never a specific existing character's outfit
+  or design.
 - **Depth and ground (street backgrounds):** buildings stand on the horizon (y=800). The road runs
   800–900, and people and props stand on the near pavement (y≈960; feet at y≥890). A scene whose subject
   is its own building uses the `<bg>_far` background (a hazy distant skyline), with that building
